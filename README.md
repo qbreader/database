@@ -5,10 +5,19 @@ Includes uploading questions, updating metadata, and getting reports.
 This repository does **not** host a web server of the database with API endpoints - see qbreader/website for that.
 The questions are stored in MongoDB.
 
+## Obtaining Questions
+
+If you want to obtain a copy of all the questions on the database, you may be interested in downloading the [latest backup](https://drive.google.com/drive/folders/18KcRfM50Y2QqUNfxwcyEnvOmfjEAcrR3?usp=sharing).
+I ask that any software you develop using this question also uses a copyleft license.
+
+**Note:** since I have obtained all of these questions from https://quizbowlpackets.com/, you should follow their disclaimer:
+> Everything posted here is copyright the writers and tournament hosts. Not the archives. It is illegal to make money from the use or sale of these questions without the explicit permission of the owners.
+
 ## Usage
 
-Please **contact me** @geoffrey-wu if you want access to the database.
-As this repository involves modifying the contents of the database, I need to know who you are in order to give you credentials to the database.
+Please **contact me** @geoffrey-wu if you want edit access to the database.
+As this repository involves modifying the contents of the database, I need to know who you are in order to give you credentials.
+If you're interested in running the website or building your own app, I can give you read-only access credentials.
 
 1) Run `npm install`
 2) Run whichever file you're interested in using `node`.
