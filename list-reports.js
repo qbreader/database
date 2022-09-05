@@ -2,7 +2,7 @@ if (process.env.NODE_ENV !== 'production') {
     require('dotenv').config();
 }
 
-const Colors = require('../Colors');
+const Colors = require('./Colors');
 const { MongoClient, ObjectId } = require('mongodb');
 
 const uri = `mongodb+srv://${process.env.MONGODB_USERNAME || 'geoffreywu42'}:${process.env.MONGODB_PASSWORD || 'password'}@qbreader.0i7oej9.mongodb.net/?retryWrites=true&w=majority`;
