@@ -14,18 +14,17 @@ const database = client.db('qbreader');
 const questions = database.collection('questions');
 const sets = database.collection('sets');
 
+function clearReports() {
+    questions.updateMany({ reports: { $exists: true } }, { $unset: { reports: '' } }).then(result => {
+        console.log(result);
+    });
+}
+
 
 async function deleteSet(setName) {
     let set = await sets.findOne({ name: setName });
     sets.deleteOne({ name: setName });
     console.log(await questions.deleteMany({ set: set._id }));
-}
-
-
-function deleteReports() {
-    questions.updateMany({ reports: { $exists: true } }, { $unset: { reports: '' } }).then(result => {
-        console.log(result);
-    });
 }
 
 
