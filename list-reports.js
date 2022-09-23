@@ -23,12 +23,15 @@ questions.find({ reports: { $exists: true }, type: 'tossup' }, { sort: { reports
     question.answer = question.answer.replace(/<\/b>/g, Colors.ENDC);
     question.answer = question.answer.replace(/<u>/g, Colors.UNDERLINE);
     question.answer = question.answer.replace(/<\/u>/g, Colors.ENDC);
-    const string = `
+    console.log(`
 ${Colors.OKCYAN}${setName}${Colors.ENDC} Packet ${question.packetNumber} Question ${question.questionNumber}
 Question ID: ${Colors.OKBLUE}${question._id}${Colors.ENDC}
 ${question.question}
 ANSWER: ${question.answer}
-<${question.category} / ${question.subcategory}>
-Number of reports: ${question.reports}`;
-    console.log(string);
+<${question.category} / ${question.subcategory}>`);
+    for (let i = 0; i < question.reports.length; i++) {
+        console.log(`
+${Colors.HEADER}Reason:${Colors.ENDC} ${question.reports[i].reason}
+${Colors.HEADER}Description:${Colors.ENDC} ${question.reports[i].description}`);
+    }
 });
