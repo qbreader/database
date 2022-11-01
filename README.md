@@ -7,7 +7,7 @@ The questions are stored in MongoDB.
 
 ## Obtaining Questions
 
-If you want to obtain a copy of all the questions on the database, you may be interested in downloading the [latest backup](https://drive.google.com/drive/folders/1xDT8MHAxlYDA8m91cys3VE94JpaXdXJ9?usp=sharing).
+If you want to obtain a copy of all the questions on the database, you may be interested in downloading the [latest backup](https://drive.google.com/drive/folders/1E1Mop3gpuFithNXwCvGqbgkfB2vkkM-J?usp=sharing).
 I ask that any software you develop using this question also uses a copyleft license.
 
 **Note:** since I have obtained all of these questions from https://quizbowlpackets.com/, you should follow their disclaimer:
