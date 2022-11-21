@@ -24,12 +24,12 @@ client.connect().then(() => {
             return;
         }
 
-        let set = {_id: new ObjectId(), name: setName, packets: []};
+        let set = { _id: new ObjectId(), name: setName, packets: [] };
         fs.readdirSync(PACKET_DIRECTORY + setName).forEach((packetName) => {
             if (!packetName.endsWith('.json')) return;
 
             packetNumber++;
-            let packet = {_id: new ObjectId(), name: packetName.slice(0, -5), tossups: [], bonuses: []};
+            let packet = { _id: new ObjectId(), name: packetName.slice(0, -5), tossups: [], bonuses: [] };
             let data = JSON.parse(fs.readFileSync(PACKET_DIRECTORY + setName + '/' + packetName));
             let tossups = data.tossups;
             let bonuses = data.bonuses;
@@ -39,6 +39,7 @@ client.connect().then(() => {
                     tossup._id = new ObjectId();
                     tossup.packet = packet._id;
                     tossup.set = set._id;
+                    tossup.setName = setName;
                     tossup.type = 'tossup';
                     tossup.packetNumber = packetNumber;
                     tossup.questionNumber = tossup.questionNumber || (index + 1);
@@ -57,6 +58,7 @@ client.connect().then(() => {
                     bonus._id = new ObjectId();
                     bonus.packet = packet._id;
                     bonus.set = set._id;
+                    bonus.setName = setName;
                     bonus.type = 'bonus';
                     bonus.packetNumber = packetNumber;
                     bonus.questionNumber = bonus.questionNumber || (index + 1);

@@ -42,6 +42,20 @@ function listSetsWithAnswerFormatting() {
 }
 
 
+function denormalizeSetNames() {
+    let counter = 0;
+    sets.find({}).forEach(set => {
+        counter++;
+        if (counter % 10 === 0) {
+            console.log(`${counter} ${set.name}`);
+        }
+
+        questions.updateMany({
+            set: set._id
+        }, { $set: { setName: set.name, updatedAt: new Date() } });
+    });
+}
+
 function standardizeSubcategories() {
     const cats = require('./subcat-to-cat.json');
     const subcats = require('./standardize-subcats.json');
