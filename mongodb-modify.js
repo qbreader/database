@@ -23,7 +23,7 @@ function clearReports() {
 
 
 async function deleteSet(setName) {
-    let set = await sets.findOne({ name: setName });
+    const set = await sets.findOne({ name: setName });
     sets.deleteOne({ name: setName });
     console.log(await questions.deleteMany({ set: set._id }));
 }
@@ -50,7 +50,7 @@ function listSetsWithAnswerFormatting() {
             $match: { $or: [{ formatted_answer: { $exists: true } }, { formatted_answers: { $exists: true } }] }
         },
         {
-            $group: { _id: "$set" }
+            $group: { _id: '$set' }
         }
     ]).forEach(async set => {
         console.log((await sets.findOne({ _id: set._id }, { projection: { _id: 0, name: 1 } })).name);
@@ -59,7 +59,7 @@ function listSetsWithAnswerFormatting() {
 
 
 async function renameSet(oldName, newName) {
-    let set = await sets.findOneAndUpdate({ name: oldName }, { $set: { name: newName } }).then(result => result.value);
+    const set = await sets.findOneAndUpdate({ name: oldName }, { $set: { name: newName } }).then(result => result.value);
     console.log(set._id);
     questions.updateMany({ set: set._id }, { $set: { setName: newName, updatedAt: new Date() }}).then(result => {
         console.log(result);

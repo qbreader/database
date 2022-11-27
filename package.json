@@ -1,7 +1,10 @@
 {
-  "name": "qbreader/database",
+  "name": "qbreader-database",
   "dependencies": {
     "dotenv": "^16.0.2",
     "mongodb": "^4.9.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.28.0"
   }
 }
