@@ -25,7 +25,7 @@ client.connect().then(() => {
         }
 
         let set = { _id: new ObjectId(), name: setName, packets: [] };
-        fs.readdirSync(PACKET_DIRECTORY + setName).forEach((packetName) => {
+        fs.readdirSync(PACKET_DIRECTORY + setName).sort().forEach((packetName) => {
             if (!packetName.endsWith('.json')) return;
 
             packetNumber++;
