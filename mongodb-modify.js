@@ -14,6 +14,7 @@ const database = client.db('qbreader');
 const questions = database.collection('questions');
 const sets = database.collection('sets');
 
+
 function clearReports() {
     questions.updateMany({ reports: { $exists: true } }, { $unset: { reports: '' } }).then(result => {
         console.log(result);
@@ -25,6 +26,21 @@ async function deleteSet(setName) {
     let set = await sets.findOne({ name: setName });
     sets.deleteOne({ name: setName });
     console.log(await questions.deleteMany({ set: set._id }));
+}
+
+
+function denormalizeSetNames() {
+    let counter = 0;
+    sets.find({}).forEach(set => {
+        counter++;
+        if (counter % 10 === 0) {
+            console.log(`${counter} ${set.name}`);
+        }
+
+        questions.updateMany({
+            set: set._id
+        }, { $set: { setName: set.name, updatedAt: new Date() } });
+    });
 }
 
 
@@ -42,19 +58,14 @@ function listSetsWithAnswerFormatting() {
 }
 
 
-function denormalizeSetNames() {
-    let counter = 0;
-    sets.find({}).forEach(set => {
-        counter++;
-        if (counter % 10 === 0) {
-            console.log(`${counter} ${set.name}`);
-        }
-
-        questions.updateMany({
-            set: set._id
-        }, { $set: { setName: set.name, updatedAt: new Date() } });
+async function renameSet(oldName, newName) {
+    let set = await sets.findOneAndUpdate({ name: oldName }, { $set: { name: newName } }).then(result => result.value);
+    console.log(set._id);
+    questions.updateMany({ set: set._id }, { $set: { setName: newName, updatedAt: new Date() }}).then(result => {
+        console.log(result);
     });
 }
+
 
 function standardizeSubcategories() {
     const cats = require('./subcat-to-cat.json');
