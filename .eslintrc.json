@@ -22,6 +22,13 @@
             "error",
             "unix"
         ],
+        "no-var": "error",
+        "no-unused-vars": "off",
+        "object-curly-spacing": ["error", "always"],
+        "prefer-const": ["error", {
+            "destructuring": "all",
+            "ignoreReadBeforeAssign": false
+        }],
         "quotes": [
             "error",
             "single"
@@ -29,13 +36,7 @@
         "semi": [
             "error",
             "always"
-        ],
-        "prefer-const": ["error", {
-            "destructuring": "all",
-            "ignoreReadBeforeAssign": false
-        }],
-        "no-var": "error",
-        "no-unused-vars": "off"
+        ]
     },
     "globals": {
         "process": "readonly"

@@ -61,7 +61,7 @@ function listSetsWithAnswerFormatting() {
 async function renameSet(oldName, newName) {
     const set = await sets.findOneAndUpdate({ name: oldName }, { $set: { name: newName } }).then(result => result.value);
     console.log(set._id);
-    questions.updateMany({ set: set._id }, { $set: { setName: newName, updatedAt: new Date() }}).then(result => {
+    questions.updateMany({ set: set._id }, { $set: { setName: newName, updatedAt: new Date() } }).then(result => {
         console.log(result);
     });
 }
