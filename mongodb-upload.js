@@ -24,10 +24,13 @@ client.connect().then(() => {
             return;
         }
 
+        console.log(`Uploading ${setName}...`);
+
         const set = { _id: new ObjectId(), name: setName, packets: [] };
         fs.readdirSync(PACKET_DIRECTORY + setName).sort().forEach((packetName) => {
             if (!packetName.endsWith('.json')) return;
 
+            console.log(packetName);
             packetNumber++;
             const packet = { _id: new ObjectId(), name: packetName.slice(0, -5), tossups: [], bonuses: [] };
             const data = JSON.parse(fs.readFileSync(PACKET_DIRECTORY + setName + '/' + packetName));
