@@ -8,6 +8,7 @@
 source .env
 mongodump --uri="mongodb+srv://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@qbreader.0i7oej9.mongodb.net/?retryWrites=true&w=majority" -d qbreader
 mv dump/qbreader $(date +%Y-%m-%d_%H:%M:%S)
+rm -r dump
 cd $(date +%Y-%m-%d_%H:%M:%S)
 bsondump --outFile=questions.json questions.bson
 bsondump --outFile=sets.json sets.bson
