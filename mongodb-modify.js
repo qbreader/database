@@ -44,6 +44,36 @@ function denormalizeSetNames() {
 }
 
 
+function fixPacketOrders() {
+    sets.find({}).forEach(set => {
+        const correctPackets = [];
+        let hasSwap = false;
+
+        for (let i = 0; i < set.packets.length; i++) {
+            for (let j = 0; j < set.packets.length; j++) {
+                if (parseInt(set.packets[j].name) === i + 1) {
+                // if (String(set.packets[j].name).search(new RegExp(`\\b${i + 1}\\b`)) >= 0) {
+                    correctPackets.push(set.packets[j]);
+                    if (i !== j) hasSwap = true;
+                    break;
+                }
+            }
+        }
+
+        if (hasSwap && correctPackets.length === set.packets.length) {
+            console.log(set.name);
+            console.log(set.packets.map(packet => packet.name));
+            console.log(correctPackets.map(packet => packet.name));
+
+            sets.updateOne({ _id: set._id }, { $set: { packets: correctPackets } });
+            for (let i = 0; i < set.packets.length; i++) {
+                questions.updateMany({ packet: correctPackets[i]._id }, { $set: { packetNumber: i + 1 } });
+            }
+        }
+    });
+}
+
+
 function listSetsWithAnswerFormatting() {
     questions.aggregate([
         {
