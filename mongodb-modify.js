@@ -58,6 +58,13 @@ function listSetsWithAnswerFormatting() {
 }
 
 
+function listSetsWithoutDifficulty() {
+    sets.find({ difficulty: { $exists: false } }).forEach(set => {
+        console.log(set.name);
+    });
+}
+
+
 async function renameSet(oldName, newName) {
     const set = await sets.findOneAndUpdate({ name: oldName }, { $set: { name: newName } }).then(result => result.value);
     console.log(set._id);
