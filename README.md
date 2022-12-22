@@ -7,18 +7,19 @@ The questions are stored in MongoDB.
 
 ## Obtaining Questions
 
-If you want to obtain a copy of all the questions on the database, you may be interested in downloading the [latest backup](https://drive.google.com/drive/folders/1E1Mop3gpuFithNXwCvGqbgkfB2vkkM-J?usp=sharing).
+If you want to obtain a copy of all the questions on the database, you may be interested in downloading the [latest backup](https://drive.google.com/drive/folders/1p5E9o38Vg0YxfR9oRRMPLRHZMsQl0nQh?usp=sharing).
 I ask that any software you develop using this question also uses a copyleft license.
 
-**Note:** since I have obtained all of these questions from https://quizbowlpackets.com/, you should follow their disclaimer:
+**Note:** Since I have obtained all of these questions from https://quizbowlpackets.com/, you should follow their disclaimer:
+
 > Everything posted here is copyright the writers and tournament hosts. Not the archives. It is illegal to make money from the use or sale of these questions without the explicit permission of the owners.
 
 ## Usage
 
-Please **contact me** @geoffrey-wu if you want edit access to the database.
+Please **contact me** on discord at [thedoge#1189](https://discord.com/users/298250592135020545) if you want edit access to the database.
 As this repository involves modifying the contents of the database, I need to know who you are in order to give you credentials.
-If you're interested in running the website or building your own app, I can give you read-only access credentials.
+If you're interested in running the website or building your own app, I can give you read-only access.
 
-1) Run `npm install`
-2) Run whichever file you're interested in using `node`.
-The mongodb-modify.js file requires you to list the functions you want to call inside the file before running it.
+1. Run `npm install`
+2. Run whichever file you're interested in using `node`.
+   The mongodb-modify.js file requires you to list the functions you want to call inside the file before running it.
