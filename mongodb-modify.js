@@ -6,7 +6,7 @@ const { MongoClient, ObjectId } = require('mongodb');
 
 const uri = `mongodb+srv://${process.env.MONGODB_USERNAME || 'geoffreywu42'}:${process.env.MONGODB_PASSWORD || 'password'}@qbreader.0i7oej9.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri);
-client.connect().then(() => {
+client.connect().then(async () => {
     console.log('connected to mongodb');
 });
 
@@ -92,6 +92,17 @@ function listSetsWithoutDifficulty() {
     sets.find({ difficulty: { $exists: false } }).forEach(set => {
         console.log(set.name);
     });
+}
+
+
+async function listSetsWithoutCategories() {
+    let sets = await questions.aggregate([
+        { $match: { category: { $exists: false } } },
+        { $group: { _id: '$setName' } }
+    ]).toArray();
+    sets = sets.map(set => set._id);
+    sets.sort();
+    console.log(sets);
 }
 
 
