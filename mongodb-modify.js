@@ -139,6 +139,18 @@ function standardizeSubcategories() {
 }
 
 
+function updateQuestionCategory(_id, subcategory) {
+    const cats = require('./subcat-to-cat.json');
+
+    questions.updateOne({ _id: ObjectId(_id) }, {
+        $set: { category: cats[subcategory], subcategory: subcategory },
+        $unset: { reports: '' }
+    }).then(result => {
+        console.log(result);
+    });
+}
+
+
 function updateSetDifficulty(setName, difficulty) {
     sets.updateOne({ name: setName }, { $set: { difficulty: difficulty } });
 
