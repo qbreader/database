@@ -36,7 +36,7 @@ function listReports({ bashHighlighting = true, allowedReasons = reportReasons }
 
         if (hasAllowedReason === false) return;
 
-        question.answer = question?.formatted_answer.replace(/<\/?i>/, 0) ?? question.answer;
+        question.answer = question?.formatted_answer.replace(/<\/?i>/g, '') ?? question.answer;
         question.answer = question.answer
             .replace(/<b>/g, Colors.BOLD)
             .replace(/<u>/g, Colors.UNDERLINE)
