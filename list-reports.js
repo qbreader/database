@@ -16,12 +16,12 @@ const questions = database.collection('questions');
 
 const reportReasons = [ 'wrong-category', 'answerline-parsing', 'answerline-formatting', 'missing-parts', 'unnecessary-text' ];
 
-function listReports({ bashHighlighting = true, allowedReasons = reportReasons } = {}) {
+function listReports({ bashHighlighting = true, allowedReasons = reportReasons, questionTypes = ['tossup', 'bonus'] } = {}) {
     questions.aggregate([
         { $match: {
-            formatted_answer: { $exists: true },
+            $or: [{ formatted_answer: { $exists: true } }, { formatted_answers: { $exists: true } }],
             reports: { $exists: true },
-            type: 'tossup',
+            type: { $in: questionTypes },
         } },
         // { $addFields: { report_count: { $size: '$reports' } } },
         // { $sort: { report_count: -1 } },
@@ -34,19 +34,42 @@ function listReports({ bashHighlighting = true, allowedReasons = reportReasons }
                 hasAllowedReason = true;
         }
 
-        if (hasAllowedReason === false) return;
-
-        question.answer = question?.formatted_answer.replace(/<\/?i>/g, '') ?? question.answer;
-        question.answer = question.answer
-            .replace(/<b>/g, Colors.BOLD)
-            .replace(/<u>/g, Colors.UNDERLINE)
-            .replace(/<\/b>/g, Colors.ENDC)
-            .replace(/<\/u>/g, Colors.ENDC);
+        if (!hasAllowedReason)
+            return;
 
         console.log(`${bashHighlighting ? Colors.OKCYAN : ''}${question.setName}${Colors.ENDC} Packet ${question.packetNumber} Question ${question.questionNumber}`);
         console.log(`Question ID: ${bashHighlighting ? Colors.OKBLUE : ''}${question._id}${bashHighlighting ? Colors.ENDC : ''}`);
-        console.log(`${question.question}`);
-        console.log(`ANSWER: ${question.answer}`);
+
+        if (question.type === 'tossup') {
+            question.answer = question?.formatted_answer ?? question.answer;
+            question.answer = question.answer
+                .replace(/<b>/g, bashHighlighting ? Colors.BOLD : '')
+                .replace(/<u>/g, bashHighlighting ? Colors.UNDERLINE : '')
+                .replace(/<\/b>/g, bashHighlighting ? Colors.ENDC : '')
+                .replace(/<\/u>/g, bashHighlighting ? Colors.ENDC : '')
+                .replace(/<\/?i>/g, '');
+
+            console.log(`${question.question}`);
+            console.log(`ANSWER: ${question.answer}`);
+        } else {
+            question.answers = question?.formatted_answers ?? question.answers;
+
+            for (let i = 0; i < question.answers.length; i++) {
+                question.answers[i] = question.answers[i]
+                    .replace(/<b>/g, bashHighlighting ? Colors.BOLD : '')
+                    .replace(/<u>/g, bashHighlighting ? Colors.UNDERLINE : '')
+                    .replace(/<\/b>/g, bashHighlighting ? Colors.ENDC : '')
+                    .replace(/<\/u>/g, bashHighlighting ? Colors.ENDC : '')
+                    .replace(/<\/?i>/g, '');
+            }
+
+            console.log(question.leadin);
+            for (let i = 0; i < question.answers.length; i++) {
+                console.log(`[10] ${question.parts[i]}`);
+                console.log(`ANSWER: ${question.answers[i]}`);
+            }
+        }
+
         console.log(`<${question.category} / ${question.subcategory}>`);
         console.log();
 
