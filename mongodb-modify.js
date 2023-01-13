@@ -74,6 +74,19 @@ function fixPacketOrders() {
 }
 
 
+function listQuestionsWithoutCategory() {
+    questions.find({ category: { $exists: false } })
+        .forEach(question => {
+            const { _id, type } = question;
+            const text = type === 'tossup'
+                ? question.question + ' ' + question.answer
+                : question.leadin + question.parts.reduce((a, b) => a + ' ' + b, '') + question.answers.reduce((a, b) => a + ' ' + b, '');
+
+            console.log(JSON.stringify({ _id, text }));
+        });
+}
+
+
 function listSetsWithAnswerFormatting() {
     questions.aggregate([
         {
@@ -164,4 +177,30 @@ function updateSetDifficulty(setName, difficulty) {
                 console.log(`Updated ${set.name} difficulty to ${difficulty}`);
             });
     });
+}
+
+/**
+ * Each line of the file at `filename` should be a valid JSON object with a `_id`, `category`, and `subcategory` field.
+ * This function updates each document located at `_id` with the corresponding `category` and `subcategory`.
+ * @param {String} filename the file from which to read in data for the categories
+ */
+async function updateQuestionsWithoutCategory(filename) {
+    const fs = require('fs');
+    const data = fs.readFileSync(filename, { encoding: 'utf-8' });
+
+    let counter = 0;
+
+    for (const line of data.split('\n')) {
+        if (line === '')
+            continue;
+
+        const data = JSON.parse(line);
+        const result = await questions.updateOne({ _id: new ObjectId(data._id) }, { $set: { category: data.category, subcategory: data.subcategory } });
+        counter++;
+
+        if (counter % 100 == 0) {
+            console.log(counter);
+            console.log(result);
+        }
+    }
 }
