@@ -74,8 +74,8 @@ function fixPacketOrders() {
 }
 
 
-function listQuestionsWithoutCategory() {
-    questions.find({ category: { $exists: false } })
+function listQuestionsWithoutSubcategory() {
+    questions.find({ subcategory: { $exists: false } })
         .forEach(question => {
             const { _id, type } = question;
             const text = type === 'tossup'
@@ -133,7 +133,7 @@ function standardizeSubcategories() {
     const subcats = require('./standardize-subcats.json');
 
     let counter = 0;
-    questions.find({}, { projection: { _id: 1, category: 1, subcategory: 1 } }).forEach(question => {
+    questions.find({ subcategory: { $nin: Object.keys(cats) } }, { projection: { _id: 1, category: 1, subcategory: 1 } }).forEach(question => {
         counter++;
         if (question.subcategory === undefined || question.subcategory in cats) return;
 
@@ -184,7 +184,7 @@ function updateSetDifficulty(setName, difficulty) {
  * This function updates each document located at `_id` with the corresponding `category` and `subcategory`.
  * @param {String} filename the file from which to read in data for the categories
  */
-async function updateQuestionsWithoutCategory(filename) {
+async function updateQuestionsWithoutSubcategory(filename) {
     const fs = require('fs');
     const data = fs.readFileSync(filename, { encoding: 'utf-8' });
 
