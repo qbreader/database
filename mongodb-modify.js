@@ -74,6 +74,25 @@ function fixPacketOrders() {
 }
 
 
+function listAlternateSubcategories() {
+    questions.find({
+        subcategory: { $in: ['Poetry', 'Drama', 'Long Fiction', 'Short Fiction'] }
+    }).forEach(question => {
+        const { _id, type } = question;
+        const text = type === 'tossup'
+            ? question.question + ' ' + question.answer
+            : question.leadin + question.parts.reduce((a, b) => a + ' ' + b, '') + question.answers.reduce((a, b) => a + ' ' + b, '');
+
+        console.log(JSON.stringify({ _id, text }));
+    });
+
+    // console.log(await questions.updateMany(
+    //     { subcategory: { $in: ['Poetry', 'Drama', 'Long Fiction', 'Short Fiction'] } },
+    //     { $rename: { subcategory: 'alternate_subcategory' } }
+    // ));
+}
+
+
 function listQuestionsWithoutSubcategory() {
     questions.find({ subcategory: { $exists: false } })
         .forEach(question => {
@@ -184,7 +203,7 @@ function updateSetDifficulty(setName, difficulty) {
  * This function updates each document located at `_id` with the corresponding `category` and `subcategory`.
  * @param {String} filename the file from which to read in data for the categories
  */
-async function updateQuestionsWithoutSubcategory(filename) {
+async function updateManySubcategories(filename) {
     const fs = require('fs');
     const data = fs.readFileSync(filename, { encoding: 'utf-8' });
 
