@@ -39,6 +39,13 @@ client.connect().then(() => {
 
             if (tossups) {
                 tossups.forEach((tossup, index) => {
+                    tossup.question = tossup.question.replace(/ {2,}/g, ' ');
+                    tossup.answer = tossup.answer.replace(/ {2,}/g, ' ');
+
+                    if (tossup.formatted_answer) {
+                        tossup.formatted_answer = tossup.formatted_answer.replace(/ {2,}/g, ' ');
+                    }
+
                     tossup._id = new ObjectId();
                     tossup.packet = packet._id;
                     tossup.set = set._id;
@@ -58,6 +65,19 @@ client.connect().then(() => {
             if (bonuses) {
                 bonuses.forEach((bonus, index) => {
                     delete bonus.values;
+
+                    for (let i = 0; i < bonus.parts.length; i++) {
+                        bonus.parts[i] = bonus.parts[i].replace(/ {2,}/g, ' ');
+                    }
+
+                    for (let i = 0; i < bonus.answers.length; i++) {
+                        bonus.answers[i] = bonus.answers[i].replace(/ {2,}/g, ' ');
+                    }
+
+                    for (let i = 0; i < bonus?.formatted_answers.length ?? 0; i++) {
+                        bonus.formatted_answers[i] = bonus.formatted_answers[i].replace(/ {2,}/g, ' ');
+                    }
+
                     bonus._id = new ObjectId();
                     bonus.packet = packet._id;
                     bonus.set = set._id;
