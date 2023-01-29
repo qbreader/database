@@ -12,7 +12,6 @@
 2009 Early Fall Tournament (EFT)
 2009 Fall Kickoff Tournament (FKT)
 2009 Fall Novice Tournament
-2009 Lederberg
 2009 Minnesota Undergraduate Tournament (MUT)
 2010 Early Fall Tournament (EFT)
 2010 Fall Kickoff Tournament (FKT)
@@ -29,7 +28,5 @@
 2017 XENOPHON
 2018 Human Use of Human Beings
 2018 MALA
-2019 ScotBowl
-2020 AQBL October Set
 2020 TAPIR
 2020 Wolfie Bowl
