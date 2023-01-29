@@ -74,6 +74,58 @@ function fixPacketOrders() {
 }
 
 
+async function fixSpaces() {
+    const fields = ['question', 'answer', 'formatted_answer', 'leadin'];
+    const arrayFields = ['parts', 'answers', 'formatted_answers'];
+
+    for (const field of fields) {
+        console.log(field, await questions.countDocuments({ [field]: /\t|^ | $| {2,}/ }));
+    }
+
+    for (const field of arrayFields) {
+        console.log(field, await questions.countDocuments({ [field]: /\t|^ | $| {2,}/ }));
+    }
+
+    let counter = 0;
+
+    for (const field of fields) {
+        console.log('updating', field);
+        questions.find({ [field]: /\t|^ | $| {2,}/ }).forEach(question => {
+            question[field] = question[field]
+                .replace(/\t/g, ' ')
+                .replace(/ {2,}/g, ' ')
+                .trim();
+
+            questions.updateOne({ _id: question._id }, { $set: { [field]: question[field] } });
+
+            counter++;
+            if (counter % 100 === 0) {
+                console.log(counter);
+            }
+        });
+    }
+
+    for (const field of arrayFields) {
+        console.log('updating', field);
+        questions.find({ [field]: /\t|^ | $| {2,}/ }).forEach(question => {
+            for (let i = 0; i < question[field].length; i++) {
+                question[field][i] = question[field][i]
+                    .replace(/\t/g, ' ')
+                    .replace(/ {2,}/g, ' ')
+                    .trim();
+            }
+
+            questions.updateOne({ _id: question._id }, { $set: { [field]: question[field] } });
+
+            counter++;
+            if (counter % 100 === 0) {
+                console.log(counter);
+            }
+        });
+    }
+}
+
+
 function listAlternateSubcategories() {
     questions.find({
         subcategory: { $in: ['Poetry', 'Drama', 'Long Fiction', 'Short Fiction'] }
