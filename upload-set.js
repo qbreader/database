@@ -39,11 +39,21 @@ client.connect().then(() => {
 
             if (tossups) {
                 tossups.forEach((tossup, index) => {
-                    tossup.question = tossup.question.replace(/ {2,}/g, ' ');
-                    tossup.answer = tossup.answer.replace(/ {2,}/g, ' ');
+                    tossup.question = tossup.question
+                        .replace(/\t/g, ' ')
+                        .replace(/ {2,}/g, ' ')
+                        .trim();
+
+                    tossup.answer = tossup.answer
+                        .replace(/\t/g, ' ')
+                        .replace(/ {2,}/g, ' ')
+                        .trim();
 
                     if (tossup.formatted_answer) {
-                        tossup.formatted_answer = tossup.formatted_answer.replace(/ {2,}/g, ' ');
+                        tossup.formatted_answer = tossup.formatted_answer
+                            .replace(/\t/g, ' ')
+                            .replace(/ {2,}/g, ' ')
+                            .trim();
                     }
 
                     tossup._id = new ObjectId();
@@ -67,15 +77,24 @@ client.connect().then(() => {
                     delete bonus.values;
 
                     for (let i = 0; i < bonus.parts.length; i++) {
-                        bonus.parts[i] = bonus.parts[i].replace(/ {2,}/g, ' ');
+                        bonus.parts[i] = bonus.parts[i]
+                            .replace(/\t/g, ' ')
+                            .replace(/ {2,}/g, ' ')
+                            .trim();
                     }
 
                     for (let i = 0; i < bonus.answers.length; i++) {
-                        bonus.answers[i] = bonus.answers[i].replace(/ {2,}/g, ' ');
+                        bonus.answers[i] = bonus.answers[i]
+                            .replace(/\t/g, ' ')
+                            .replace(/ {2,}/g, ' ')
+                            .trim();
                     }
 
                     for (let i = 0; i < bonus?.formatted_answers.length ?? 0; i++) {
-                        bonus.formatted_answers[i] = bonus.formatted_answers[i].replace(/ {2,}/g, ' ');
+                        bonus.formatted_answers[i] = bonus.formatted_answers[i]
+                            .replace(/\t/g, ' ')
+                            .replace(/ {2,}/g, ' ')
+                            .trim();
                     }
 
                     bonus._id = new ObjectId();
