@@ -5,21 +5,36 @@ if (process.env.NODE_ENV !== 'production') {
 const fs = require('fs');
 const { MongoClient, ObjectId } = require('mongodb');
 
+const setName = '2021 HARI';
+const packetNumber = 14;
 
-const data = JSON.parse(fs.readFileSync('17.json'));
-const setID = new ObjectId('62e35effc080082733afc3cc');
-const packetID = new ObjectId('62e35effc080082733afc699');
-const setName = '2012 Chicago Open';
-const packetNumber = 17;
+
+const data = JSON.parse(fs.readFileSync(`${packetNumber}.json`));
 
 const uri = `mongodb+srv://${process.env.MONGODB_USERNAME || 'geoffreywu42'}:${process.env.MONGODB_PASSWORD || 'password'}@qbreader.0i7oej9.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri);
-client.connect().then(() => {
+client.connect().then(async () => {
     console.log('connected to mongodb');
 
     const database = client.db('qbreader');
     const sets = database.collection('sets');
     const questions = database.collection('questions');
+
+    const setID = await sets.findOne({ name: setName }).then(set => {
+        return set._id;
+    });
+
+    const packetID = await sets.findOne({ name: setName }).then(async set => {
+        if (set.packets.length + 1 == packetNumber) {
+            const id = new ObjectId();
+            await sets.updateOne({ name: setName }, { $push: { packets: { _id: id, name: packetNumber, tossups: [], bonuses: [] } } });
+            return id;
+        } else if (set.packets.length < packetNumber) {
+            throw new Error('Packet number is too high');
+        }
+
+        return set.packets[packetNumber - 1]._id;
+    });
 
     questions.deleteMany({ set: setID, packet: packetID }).then(result => {
         console.log(result);
@@ -99,8 +114,8 @@ client.connect().then(() => {
     sets.updateOne(
         { _id: setID },
         { $set: {
-            ['packets.' + packetNumber + '.tossups']: tossups,
-            ['packets.' + packetNumber + '.bonuses']: bonuses,
+            [`packets.${packetNumber - 1}.tossups`]: tossups,
+            [`packets.${packetNumber - 1}.bonuses`]: bonuses,
         } }
     ).then(result => {
         console.log(result);
