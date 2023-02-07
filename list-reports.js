@@ -2,7 +2,9 @@ if (process.env.NODE_ENV !== 'production') {
     require('dotenv').config();
 }
 
-const Colors = require('./Colors');
+const bcolors = require('./bcolors');
+const { tossupToString, bonusToString } = require('./stringify');
+
 const { MongoClient, ObjectId } = require('mongodb');
 
 const uri = `mongodb+srv://${process.env.MONGODB_USERNAME || 'geoffreywu42'}:${process.env.MONGODB_PASSWORD || 'password'}@qbreader.0i7oej9.mongodb.net/?retryWrites=true&w=majority`;
@@ -23,8 +25,6 @@ function listReports({ bashHighlighting = true, allowedReasons = reportReasons, 
             reports: { $exists: true },
             type: { $in: questionTypes },
         } },
-        // { $addFields: { report_count: { $size: '$reports' } } },
-        // { $sort: { report_count: -1 } },
         { $sort: { reports: -1 } },
     ]).forEach(async question => {
         let hasAllowedReason = false;
@@ -37,49 +37,19 @@ function listReports({ bashHighlighting = true, allowedReasons = reportReasons, 
         if (!hasAllowedReason)
             return;
 
-        console.log(`${bashHighlighting ? Colors.OKCYAN : ''}${question.setName}${Colors.ENDC} Packet ${question.packetNumber} Question ${question.questionNumber}`);
-        console.log(`Question ID: ${bashHighlighting ? Colors.OKBLUE : ''}${question._id}${bashHighlighting ? Colors.ENDC : ''}`);
-
         if (question.type === 'tossup') {
-            question.answer = question?.formatted_answer ?? question.answer;
-            question.answer = question.answer
-                .replace(/<b>/g, bashHighlighting ? Colors.BOLD : '')
-                .replace(/<u>/g, bashHighlighting ? Colors.UNDERLINE : '')
-                .replace(/<\/b>/g, bashHighlighting ? Colors.ENDC : '')
-                .replace(/<\/u>/g, bashHighlighting ? Colors.ENDC : '')
-                .replace(/<\/?i>/g, '');
-
-            console.log(`${question.question}`);
-            console.log(`ANSWER: ${question.answer}`);
+            console.log(tossupToString(question, bashHighlighting));
         } else {
-            question.answers = question?.formatted_answers ?? question.answers;
-
-            for (let i = 0; i < question.answers.length; i++) {
-                question.answers[i] = question.answers[i]
-                    .replace(/<b>/g, bashHighlighting ? Colors.BOLD : '')
-                    .replace(/<u>/g, bashHighlighting ? Colors.UNDERLINE : '')
-                    .replace(/<\/b>/g, bashHighlighting ? Colors.ENDC : '')
-                    .replace(/<\/u>/g, bashHighlighting ? Colors.ENDC : '')
-                    .replace(/<\/?i>/g, '');
-            }
-
-            console.log(question.leadin);
-            for (let i = 0; i < question.answers.length; i++) {
-                console.log(`[10] ${question.parts[i]}`);
-                console.log(`ANSWER: ${question.answers[i]}`);
-            }
+            console.log(bonusToString(question, bashHighlighting));
         }
 
-        console.log(`<${question.category} / ${question.subcategory}>`);
-        console.log();
-
         for (let i = 0; i < question.reports.length; i++) {
-            console.log(`${bashHighlighting ? Colors.HEADER : ''}Reason:${bashHighlighting ? Colors.ENDC : ''} ${question.reports[i].reason}`);
-            console.log(`${bashHighlighting ? Colors.HEADER : ''}Description:${bashHighlighting ? Colors.ENDC : ''} ${question.reports[i].description}`);
+            console.log(`${bashHighlighting ? bcolors.HEADER : ''}Reason:${bashHighlighting ? bcolors.ENDC : ''} ${question.reports[i].reason}`);
+            console.log(`${bashHighlighting ? bcolors.HEADER : ''}Description:${bashHighlighting ? bcolors.ENDC : ''} ${question.reports[i].description}`);
             console.log();
         }
     });
 }
 
-// listReports({ allowedReasons: [ 'wrong-category', 'answerline-formatting', 'missing-parts', 'unnecessary-text' ] });
-listReports();
+listReports({ allowedReasons: [ 'wrong-category', 'answerline-formatting', 'missing-parts', 'unnecessary-text' ] });
+// listReports();
