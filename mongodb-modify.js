@@ -226,6 +226,11 @@ function standardizeSubcategories() {
 function updateQuestionCategory(_id, subcategory) {
     const cats = require('./subcat-to-cat.json');
 
+    if (!(subcategory in cats)) {
+        console.log(`Subcategory ${subcategory} not found`);
+        return;
+    }
+
     questions.updateOne({ _id: ObjectId(_id) }, {
         $set: { category: cats[subcategory], subcategory: subcategory },
         $unset: { reports: '' }
