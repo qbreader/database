@@ -199,6 +199,26 @@ async function renameSet(oldName, newName) {
 }
 
 
+async function sanitizeLeadin() {
+    const field = 'leadin';
+
+    const count = await questions.countDocuments({ [field]: { $regex: /\[(10)?[EMH]\].*ANSWER:/i } });
+    console.log(count);
+
+    let counter = 0;
+
+    questions.find({ [field]: { $regex: /\[(10)?[EMH]\].*ANSWER:/i } }).forEach(question => {
+        questions.updateOne({ _id: question._id }, { $set: { [field]: question[field].replace(/\[(10)?[EMH]\].*ANSWER:/i, '').trim() } });
+
+        counter++;
+        if (counter % 100 === 0) {
+            console.log(counter);
+        }
+    });
+
+    return counter;
+}
+
 function standardizeSubcategories() {
     const cats = require('./subcat-to-cat.json');
     const subcats = require('./standardize-subcats.json');
