@@ -208,7 +208,7 @@ async function sanitizeLeadin() {
     let counter = 0;
 
     questions.find({ [field]: { $regex: /\[(10)?[EMH]\].*ANSWER:/i } }).forEach(question => {
-        questions.updateOne({ _id: question._id }, { $set: { [field]: question[field].replace(/\[(10)?[EMH]\].*ANSWER:/i, '').trim() } });
+        questions.updateOne({ _id: question._id }, { $set: { [field]: question[field].replace(/\[(10)?[EMH]\].*ANSWER:/i, '').trim(), updatedAt: new Date() } });
 
         counter++;
         if (counter % 100 === 0) {
@@ -231,7 +231,7 @@ function standardizeSubcategories() {
         if (question.subcategory in subcats) {
             console.log(`${question.subcategory} -> ${subcats[question.subcategory]}`);
             question.subcategory = subcats[question.subcategory];
-            questions.updateOne({ _id: question._id }, { $set: { category: cats[question.subcategory], subcategory: question.subcategory } });
+            questions.updateOne({ _id: question._id }, { $set: { category: cats[question.subcategory], subcategory: question.subcategory, updatedAt: new Date() } });
         } else {
             console.log(`${question.subcategory} not found`);
         }
@@ -252,7 +252,7 @@ function updateQuestionCategory(_id, subcategory) {
     }
 
     questions.updateOne({ _id: ObjectId(_id) }, {
-        $set: { category: cats[subcategory], subcategory: subcategory },
+        $set: { category: cats[subcategory], subcategory: subcategory, updatedAt: new Date() },
         $unset: { reports: '' }
     }).then(result => {
         console.log(result);
