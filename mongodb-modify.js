@@ -15,6 +15,9 @@ const questions = database.collection('questions');
 const sets = database.collection('sets');
 
 
+const cats = require('./subcat-to-cat.json');
+
+
 function clearReports() {
     questions.updateMany({ reports: { $exists: true } }, { $unset: { reports: '' } }).then(result => {
         console.log(result);
@@ -126,7 +129,7 @@ async function fixSpaces() {
 }
 
 
-function listAlternateSubcategories() {
+async function listAlternateSubcategories(update = false) {
     questions.find({
         subcategory: { $in: ['Poetry', 'Drama', 'Long Fiction', 'Short Fiction'] }
     }).forEach(question => {
@@ -138,10 +141,12 @@ function listAlternateSubcategories() {
         console.log(JSON.stringify({ _id, text }));
     });
 
-    // console.log(await questions.updateMany(
-    //     { subcategory: { $in: ['Poetry', 'Drama', 'Long Fiction', 'Short Fiction'] } },
-    //     { $rename: { subcategory: 'alternate_subcategory' } }
-    // ));
+    if (update) {
+        console.log(await questions.updateMany(
+            { subcategory: { $in: ['Poetry', 'Drama', 'Long Fiction', 'Short Fiction'] } },
+            { $rename: { subcategory: 'alternate_subcategory' } }
+        ));
+    }
 }
 
 
@@ -158,32 +163,24 @@ function listQuestionsWithoutSubcategory() {
 }
 
 
-function listSetsWithAnswerFormatting() {
-    questions.aggregate([
-        {
-            $match: { $or: [{ formatted_answer: { $exists: true } }, { formatted_answers: { $exists: true } }] }
-        },
-        {
-            $group: { _id: '$set' }
-        }
-    ]).forEach(async set => {
-        console.log((await sets.findOne({ _id: set._id }, { projection: { _id: 0, name: 1 } })).name);
-    });
-}
-
-
-function listSetsWithoutDifficulty() {
-    sets.find({ difficulty: { $exists: false } }).forEach(set => {
-        console.log(set.name);
-    });
-}
-
-
-async function listSetsWithoutCategories() {
+async function listSetsWithAnswerFormatting() {
     let sets = await questions.aggregate([
-        { $match: { category: { $exists: false } } },
+        { $match: { $or: [{ formatted_answer: { $exists: true } }, { formatted_answers: { $exists: true } }] } },
         { $group: { _id: '$setName' } }
     ]).toArray();
+
+    sets = sets.map(set => set._id);
+    sets.sort();
+    console.log(sets);
+}
+
+
+async function listSetsWithoutField(field) {
+    let sets = await questions.aggregate([
+        { $match: { [field]: { $exists: false } } },
+        { $group: { _id: '$setName' } }
+    ]).toArray();
+
     sets = sets.map(set => set._id);
     sets.sort();
     console.log(sets);
@@ -193,7 +190,11 @@ async function listSetsWithoutCategories() {
 async function renameSet(oldName, newName) {
     const set = await sets.findOneAndUpdate({ name: oldName }, { $set: { name: newName } }).then(result => result.value);
     console.log(set._id);
-    questions.updateMany({ set: set._id }, { $set: { setName: newName, updatedAt: new Date() } }).then(result => {
+
+    questions.updateMany(
+        { set: set._id },
+        { $set: { setName: newName, updatedAt: new Date() } }
+    ).then(result => {
         console.log(result);
     });
 }
@@ -208,7 +209,10 @@ async function sanitizeLeadin() {
     let counter = 0;
 
     questions.find({ [field]: { $regex: /\[(10)?[EMH]\].*ANSWER:/i } }).forEach(question => {
-        questions.updateOne({ _id: question._id }, { $set: { [field]: question[field].replace(/\[(10)?[EMH]\].*ANSWER:/i, '').trim(), updatedAt: new Date() } });
+        questions.updateOne(
+            { _id: question._id },
+            { $set: { [field]: question[field].replace(/\[(10)?[EMH]\].*ANSWER:/i, '').trim(), updatedAt: new Date() } }
+        );
 
         counter++;
         if (counter % 100 === 0) {
@@ -220,18 +224,21 @@ async function sanitizeLeadin() {
 }
 
 function standardizeSubcategories() {
-    const cats = require('./subcat-to-cat.json');
     const subcats = require('./standardize-subcats.json');
 
     let counter = 0;
-    questions.find({ subcategory: { $nin: Object.keys(cats) } }, { projection: { _id: 1, category: 1, subcategory: 1 } }).forEach(question => {
+
+    questions.find(
+        { subcategory: { $nin: Object.keys(cats) } },
+        { projection: { _id: 1, category: 1, subcategory: 1 } },
+    ).forEach(question => {
         counter++;
         if (question.subcategory === undefined || question.subcategory in cats) return;
 
         if (question.subcategory in subcats) {
             console.log(`${question.subcategory} -> ${subcats[question.subcategory]}`);
             question.subcategory = subcats[question.subcategory];
-            questions.updateOne({ _id: question._id }, { $set: { category: cats[question.subcategory], subcategory: question.subcategory, updatedAt: new Date() } });
+            updateOneSubcategory(question._id, question.subcategory, false);
         } else {
             console.log(`${question.subcategory} not found`);
         }
@@ -243,37 +250,20 @@ function standardizeSubcategories() {
 }
 
 
-function updateQuestionCategory(_id, subcategory) {
-    const cats = require('./subcat-to-cat.json');
-
+async function updateOneSubcategory(_id, subcategory, clearReports = true) {
     if (!(subcategory in cats)) {
         console.log(`Subcategory ${subcategory} not found`);
         return;
     }
 
-    questions.updateOne({ _id: ObjectId(_id) }, {
-        $set: { category: cats[subcategory], subcategory: subcategory, updatedAt: new Date() },
-        $unset: { reports: '' }
-    }).then(result => {
-        console.log(result);
-    });
+    const updateDoc = { $set: { category: cats[subcategory], subcategory: subcategory, updatedAt: new Date() } };
+
+    if (clearReports)
+        updateDoc['$unset'] = { reports: 1 };
+
+    return await questions.updateOne({ _id: ObjectId(_id) }, updateDoc);
 }
 
-
-function updateSetDifficulty(setName, difficulty) {
-    sets.updateOne({ name: setName }, { $set: { difficulty: difficulty } });
-
-    sets.find({ name: setName }).forEach(set => {
-        questions.updateMany(
-            { set: set._id },
-            { $set: { difficulty: difficulty, updatedAt: new Date() } },
-            (err, result) => {
-                if (err) console.log(err);
-
-                console.log(`Updated ${set.name} difficulty to ${difficulty}`);
-            });
-    });
-}
 
 /**
  * Each line of the file at `filename` should be a valid JSON object with a `_id`, `category`, and `subcategory` field.
@@ -290,13 +280,29 @@ async function updateManySubcategories(filename) {
         if (line === '')
             continue;
 
-        const data = JSON.parse(line);
-        const result = await questions.updateOne({ _id: new ObjectId(data._id) }, { $set: { category: data.category, subcategory: data.subcategory } });
-        counter++;
+        const { _id, subcategory } = JSON.parse(line);
+        const result = await updateOneSubcategory(_id, subcategory, false);
 
+        counter++;
         if (counter % 100 == 0) {
             console.log(counter);
             console.log(result);
         }
     }
+}
+
+
+function updateSetDifficulty(setName, difficulty) {
+    sets.updateOne({ name: setName }, { $set: { difficulty: difficulty } });
+
+    sets.find({ name: setName }).forEach(set => {
+        questions.updateMany(
+            { set: set._id },
+            { $set: { difficulty: difficulty, updatedAt: new Date() } },
+            (err, result) => {
+                if (err) console.log(err);
+
+                console.log(`Updated ${set.name} difficulty to ${difficulty}`);
+            });
+    });
 }
