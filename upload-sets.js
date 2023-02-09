@@ -17,16 +17,18 @@ client.connect().then(() => {
     const PACKET_DIRECTORY = 'packets/';
     fs.readdirSync(PACKET_DIRECTORY).forEach(async setName => {
         let packetNumber = 0;
-        if (setName.endsWith('.sh') || setName == '.DS_Store') return;
+        if (setName.endsWith('.sh') || setName === '.DS_Store') return;
 
         if (await sets.findOne({ name: setName })) {
             console.log(`${setName} already exists`);
             return;
         }
 
+        const setYear = parseInt(set.name.slice(0, 4));
+
         console.log(`Uploading ${setName}...`);
 
-        const set = { _id: new ObjectId(), name: setName, packets: [] };
+        const set = { _id: new ObjectId(), name: setName, year: setYear, packets: [] };
         fs.readdirSync(PACKET_DIRECTORY + setName).sort().forEach((packetName) => {
             if (!packetName.endsWith('.json')) return;
 
@@ -60,6 +62,7 @@ client.connect().then(() => {
                     tossup.packet = packet._id;
                     tossup.set = set._id;
                     tossup.setName = setName;
+                    tossup.setYear = setYear;
                     tossup.type = 'tossup';
                     tossup.packetNumber = packetNumber;
                     tossup.questionNumber = tossup.questionNumber || (index + 1);
@@ -101,6 +104,7 @@ client.connect().then(() => {
                     bonus.packet = packet._id;
                     bonus.set = set._id;
                     bonus.setName = setName;
+                    bonus.setYear = setYear;
                     bonus.type = 'bonus';
                     bonus.packetNumber = packetNumber;
                     bonus.questionNumber = bonus.questionNumber || (index + 1);
@@ -114,6 +118,7 @@ client.connect().then(() => {
             }
             set.packets.push(packet);
         });
+
         sets.insertOne(set, (err, result) => {
             if (err) console.log(err);
             console.log(setName + ' inserted');

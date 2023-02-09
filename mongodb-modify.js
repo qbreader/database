@@ -47,6 +47,26 @@ function denormalizeSetNames() {
 }
 
 
+function denormalizeSetYears() {
+    let counter = 0;
+    sets.find({}).forEach(set => {
+        const setYear = parseInt(set.name.slice(0, 4));
+
+        sets.updateOne({ _id: set._id }, { $set: { year: setYear } });
+
+        questions.updateMany(
+            { set: set._id },
+            { $set: { setYear: setYear, updatedAt: new Date() } }
+        );
+
+        counter++;
+        if (counter % 20 === 0) {
+            console.log(`${counter} - (${setYear}) - ${set.name}`);
+        }
+    });
+}
+
+
 function fixPacketOrders() {
     sets.find({}).forEach(set => {
         const correctPackets = [];
@@ -163,27 +183,23 @@ function listQuestionsWithoutSubcategory() {
 }
 
 
-async function listSetsWithAnswerFormatting() {
-    let sets = await questions.aggregate([
+function listSetsWithAnswerFormatting() {
+    questions.aggregate([
         { $match: { $or: [{ formatted_answer: { $exists: true } }, { formatted_answers: { $exists: true } }] } },
         { $group: { _id: '$setName' } }
-    ]).toArray();
-
-    sets = sets.map(set => set._id);
-    sets.sort();
-    console.log(sets);
+    ]).forEach(set => {
+        console.log(set._id);
+    });
 }
 
 
-async function listSetsWithoutField(field) {
-    let sets = await questions.aggregate([
+function listSetsWithoutField(field) {
+    questions.aggregate([
         { $match: { [field]: { $exists: false } } },
         { $group: { _id: '$setName' } }
-    ]).toArray();
-
-    sets = sets.map(set => set._id);
-    sets.sort();
-    console.log(sets);
+    ]).forEach(set => {
+        console.log(set._id);
+    });
 }
 
 
@@ -222,6 +238,7 @@ async function sanitizeLeadin() {
 
     return counter;
 }
+
 
 function standardizeSubcategories() {
     const subcats = require('./standardize-subcats.json');
