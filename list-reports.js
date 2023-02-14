@@ -25,7 +25,7 @@ function listReports({ bashHighlighting = true, allowedReasons = reportReasons, 
             reports: { $exists: true },
             type: { $in: questionTypes },
         } },
-        { $sort: { reports: -1 } },
+        { $sort: { setName: 1, reports: 1 } },
     ]).forEach(async question => {
         let hasAllowedReason = false;
 
