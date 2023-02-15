@@ -24,11 +24,11 @@ client.connect().then(() => {
             return;
         }
 
-        const setYear = parseInt(set.name.slice(0, 4));
+        const setYear = parseInt(setName.slice(0, 4));
+        const set = { _id: new ObjectId(), name: setName, year: setYear, packets: [] };
 
         console.log(`Uploading ${setName}...`);
 
-        const set = { _id: new ObjectId(), name: setName, year: setYear, packets: [] };
         fs.readdirSync(PACKET_DIRECTORY + setName).sort().forEach((packetName) => {
             if (!packetName.endsWith('.json')) return;
 
