@@ -12,7 +12,8 @@ client.connect().then(() => {
 
     const database = client.db('qbreader');
     const sets = database.collection('sets');
-    const questions = database.collection('questions');
+    const tossups = database.collection('tossups');
+    const bonuses = database.collection('bonuses');
 
     const PACKET_DIRECTORY = 'packets/';
     fs.readdirSync(PACKET_DIRECTORY).forEach(async setName => {
@@ -36,11 +37,9 @@ client.connect().then(() => {
             packetNumber++;
             const packet = { _id: new ObjectId(), name: packetName.slice(0, -5), tossups: [], bonuses: [] };
             const data = JSON.parse(fs.readFileSync(PACKET_DIRECTORY + setName + '/' + packetName));
-            const tossups = data.tossups;
-            const bonuses = data.bonuses;
 
-            if (tossups) {
-                tossups.forEach((tossup, index) => {
+            if (data.tossups) {
+                data.tossups.forEach((tossup, index) => {
                     tossup.question = tossup.question
                         .replace(/\t/g, ' ')
                         .replace(/ {2,}/g, ' ')
@@ -68,15 +67,15 @@ client.connect().then(() => {
                     tossup.questionNumber = tossup.questionNumber || (index + 1);
                     tossup.createdAt = tossup.createdAt || new Date();
                     tossup.updatedAt = tossup.updatedAt || new Date();
-                    questions.insertOne(tossup);
+                    tossups.insertOne(tossup);
                     packet.tossups.push(tossup._id);
                 });
             } else {
                 console.log('no tossups for ' + setName + '/' + packetName);
             }
 
-            if (bonuses) {
-                bonuses.forEach((bonus, index) => {
+            if (data.bonuses) {
+                data.bonuses.forEach((bonus, index) => {
                     delete bonus.values;
 
                     for (let i = 0; i < bonus.parts.length; i++) {
@@ -110,7 +109,7 @@ client.connect().then(() => {
                     bonus.questionNumber = bonus.questionNumber || (index + 1);
                     bonus.createdAt = bonus.createdAt || new Date();
                     bonus.updatedAt = bonus.updatedAt || new Date();
-                    questions.insertOne(bonus);
+                    bonuses.insertOne(bonus);
                     packet.bonuses.push(bonus._id);
                 });
             } else {

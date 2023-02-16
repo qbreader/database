@@ -18,7 +18,8 @@ client.connect().then(async () => {
 
     const database = client.db('qbreader');
     const sets = database.collection('sets');
-    const questions = database.collection('questions');
+    const tossups = database.collection('tossups');
+    const bonuses = database.collection('bonuses');
 
     const setID = await sets.findOne({ name: setName }).then(set => {
         return set._id;
@@ -36,12 +37,18 @@ client.connect().then(async () => {
         return set.packets[packetNumber - 1]._id;
     });
 
-    questions.deleteMany({ set: setID, packet: packetID }).then(result => {
+    tossups.deleteMany({ set: setID, packet: packetID }).then(result => {
         console.log(result);
     });
 
-    const tossups = [];
-    const bonuses = [];
+    bonuses.deleteMany({ set: setID, packet: packetID }).then(result => {
+        console.log(result);
+    });
+
+    const packet = {
+        tossups: [],
+        bonuses: [],
+    };
 
     data.tossups.forEach((tossup, index) => {
         tossup.question = tossup.question
@@ -70,8 +77,8 @@ client.connect().then(async () => {
         tossup.questionNumber = tossup.questionNumber || (index + 1);
         tossup.createdAt = tossup.createdAt || new Date();
         tossup.updatedAt = tossup.updatedAt || new Date();
-        questions.insertOne(tossup);
-        tossups.push(tossup._id);
+        tossups.insertOne(tossup);
+        packet.tossups.push(tossup._id);
     });
 
     data.bonuses.forEach((bonus, index) => {
@@ -107,15 +114,15 @@ client.connect().then(async () => {
         bonus.questionNumber = bonus.questionNumber || (index + 1);
         bonus.createdAt = bonus.createdAt || new Date();
         bonus.updatedAt = bonus.updatedAt || new Date();
-        questions.insertOne(bonus);
-        bonuses.push(bonus._id);
+        bonuses.insertOne(bonus);
+        packet.bonuses.push(bonus._id);
     });
 
     sets.updateOne(
         { _id: setID },
         { $set: {
-            [`packets.${packetNumber - 1}.tossups`]: tossups,
-            [`packets.${packetNumber - 1}.bonuses`]: bonuses,
+            [`packets.${packetNumber - 1}.tossups`]: packet.tossups,
+            [`packets.${packetNumber - 1}.bonuses`]: packet.bonuses,
         } }
     ).then(result => {
         console.log(result);

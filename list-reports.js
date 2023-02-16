@@ -14,12 +14,13 @@ client.connect().then(() => {
 });
 
 const database = client.db('qbreader');
-const questions = database.collection('questions');
+const tossups = database.collection('tossups');
+const bonuses = database.collection('bonuses');
 
 const reportReasons = [ 'wrong-category', 'answerline-parsing', 'answerline-formatting', 'missing-parts', 'unnecessary-text' ];
 
 function listReports({ bashHighlighting = true, allowedReasons = reportReasons, questionTypes = ['tossup', 'bonus'] } = {}) {
-    questions.aggregate([
+    tossups.aggregate([
         { $match: {
             $or: [{ formatted_answer: { $exists: true } }, { formatted_answers: { $exists: true } }],
             reports: { $exists: true },
@@ -37,11 +38,35 @@ function listReports({ bashHighlighting = true, allowedReasons = reportReasons, 
         if (!hasAllowedReason)
             return;
 
-        if (question.type === 'tossup') {
-            console.log(tossupToString(question, bashHighlighting));
-        } else {
-            console.log(bonusToString(question, bashHighlighting));
+        console.log(tossupToString(question, bashHighlighting));
+
+
+        for (let i = 0; i < question.reports.length; i++) {
+            console.log(`${bashHighlighting ? bcolors.HEADER : ''}Reason:${bashHighlighting ? bcolors.ENDC : ''} ${question.reports[i].reason}`);
+            console.log(`${bashHighlighting ? bcolors.HEADER : ''}Description:${bashHighlighting ? bcolors.ENDC : ''} ${question.reports[i].description}`);
+            console.log();
         }
+    });
+
+    bonuses.aggregate([
+        { $match: {
+            $or: [{ formatted_answer: { $exists: true } }, { formatted_answers: { $exists: true } }],
+            reports: { $exists: true },
+            type: { $in: questionTypes },
+        } },
+        { $sort: { setName: 1, reports: 1 } },
+    ]).forEach(async question => {
+        let hasAllowedReason = false;
+
+        for (const reason of allowedReasons) {
+            if (question.reports.map(report => report.reason).includes(reason))
+                hasAllowedReason = true;
+        }
+
+        if (!hasAllowedReason)
+            return;
+
+        console.log(bonusToString(question, bashHighlighting));
 
         for (let i = 0; i < question.reports.length; i++) {
             console.log(`${bashHighlighting ? bcolors.HEADER : ''}Reason:${bashHighlighting ? bcolors.ENDC : ''} ${question.reports[i].reason}`);

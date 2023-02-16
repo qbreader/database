@@ -10,5 +10,6 @@ mongodump --uri="mongodb+srv://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@qbreader.
 mv dump/qbreader $(date +%Y-%m-%d_%H:%M:%S)
 rm -r dump
 cd $(date +%Y-%m-%d_%H:%M:%S)
-bsondump --outFile=questions.json questions.bson
+bsondump --outFile=tossups.json tossups.bson
+bsondump --outFile=bonuses.json bonuses.bson
 bsondump --outFile=sets.json sets.bson

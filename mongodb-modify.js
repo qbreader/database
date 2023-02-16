@@ -8,18 +8,24 @@ const uri = `mongodb+srv://${process.env.MONGODB_USERNAME || 'geoffreywu42'}:${p
 const client = new MongoClient(uri);
 client.connect().then(async () => {
     console.log('connected to mongodb');
+    client.close();
 });
 
 const database = client.db('qbreader');
-const questions = database.collection('questions');
 const sets = database.collection('sets');
+const tossups = database.collection('tossups');
+const bonuses = database.collection('bonuses');
 
 
 const cats = require('./subcat-to-cat.json');
 
 
 function clearReports() {
-    questions.updateMany({ reports: { $exists: true } }, { $unset: { reports: '' } }).then(result => {
+    tossups.updateMany({ reports: { $exists: true } }, { $unset: { reports: '' } }).then(result => {
+        console.log(result);
+    });
+
+    bonuses.updateMany({ reports: { $exists: true } }, { $unset: { reports: '' } }).then(result => {
         console.log(result);
     });
 }
@@ -28,7 +34,8 @@ function clearReports() {
 async function deleteSet(setName) {
     const set = await sets.findOne({ name: setName });
     sets.deleteOne({ name: setName });
-    console.log(await questions.deleteMany({ set: set._id }));
+    console.log(await tossups.deleteMany({ set: set._id }));
+    console.log(await bonuses.deleteMany({ set: set._id }));
 }
 
 
@@ -40,7 +47,10 @@ function denormalizeSetNames() {
             console.log(`${counter} ${set.name}`);
         }
 
-        questions.updateMany({
+        tossups.updateMany({
+            set: set._id
+        }, { $set: { setName: set.name, updatedAt: new Date() } });
+        bonuses.updateMany({
             set: set._id
         }, { $set: { setName: set.name, updatedAt: new Date() } });
     });
@@ -54,7 +64,12 @@ function denormalizeSetYears() {
 
         sets.updateOne({ _id: set._id }, { $set: { year: setYear } });
 
-        questions.updateMany(
+        tossups.updateMany(
+            { set: set._id },
+            { $set: { setYear: setYear, updatedAt: new Date() } }
+        );
+
+        bonuses.updateMany(
             { set: set._id },
             { $set: { setYear: setYear, updatedAt: new Date() } }
         );
@@ -90,7 +105,8 @@ function fixPacketOrders() {
 
             sets.updateOne({ _id: set._id }, { $set: { packets: correctPackets } });
             for (let i = 0; i < set.packets.length; i++) {
-                questions.updateMany({ packet: correctPackets[i]._id }, { $set: { packetNumber: i + 1 } });
+                tossups.updateMany({ packet: correctPackets[i]._id }, { $set: { packetNumber: i + 1 } });
+                bonuses.updateMany({ packet: correctPackets[i]._id }, { $set: { packetNumber: i + 1 } });
             }
         }
     });
@@ -102,24 +118,40 @@ async function fixSpaces() {
     const arrayFields = ['parts', 'answers', 'formatted_answers'];
 
     for (const field of fields) {
-        console.log(field, await questions.countDocuments({ [field]: /\t|^ | $| {2,}/ }));
+        console.log(field, await tossups.countDocuments({ [field]: /\t|^ | $| {2,}/ }));
+        console.log(field, await bonuses.countDocuments({ [field]: /\t|^ | $| {2,}/ }));
     }
 
     for (const field of arrayFields) {
-        console.log(field, await questions.countDocuments({ [field]: /\t|^ | $| {2,}/ }));
+        console.log(field, await tossups.countDocuments({ [field]: /\t|^ | $| {2,}/ }));
+        console.log(field, await bonuses.countDocuments({ [field]: /\t|^ | $| {2,}/ }));
     }
 
     let counter = 0;
 
     for (const field of fields) {
         console.log('updating', field);
-        questions.find({ [field]: /\t|^ | $| {2,}/ }).forEach(question => {
+        tossups.find({ [field]: /\t|^ | $| {2,}/ }).forEach(question => {
             question[field] = question[field]
                 .replace(/\t/g, ' ')
                 .replace(/ {2,}/g, ' ')
                 .trim();
 
-            questions.updateOne({ _id: question._id }, { $set: { [field]: question[field] } });
+            tossups.updateOne({ _id: question._id }, { $set: { [field]: question[field] } });
+
+            counter++;
+            if (counter % 100 === 0) {
+                console.log(counter);
+            }
+        });
+
+        bonuses.find({ [field]: /\t|^ | $| {2,}/ }).forEach(question => {
+            question[field] = question[field]
+                .replace(/\t/g, ' ')
+                .replace(/ {2,}/g, ' ')
+                .trim();
+
+            bonuses.updateOne({ _id: question._id }, { $set: { [field]: question[field] } });
 
             counter++;
             if (counter % 100 === 0) {
@@ -130,7 +162,7 @@ async function fixSpaces() {
 
     for (const field of arrayFields) {
         console.log('updating', field);
-        questions.find({ [field]: /\t|^ | $| {2,}/ }).forEach(question => {
+        tossups.find({ [field]: /\t|^ | $| {2,}/ }).forEach(question => {
             for (let i = 0; i < question[field].length; i++) {
                 question[field][i] = question[field][i]
                     .replace(/\t/g, ' ')
@@ -138,7 +170,23 @@ async function fixSpaces() {
                     .trim();
             }
 
-            questions.updateOne({ _id: question._id }, { $set: { [field]: question[field] } });
+            tossups.updateOne({ _id: question._id }, { $set: { [field]: question[field] } });
+
+            counter++;
+            if (counter % 100 === 0) {
+                console.log(counter);
+            }
+        });
+
+        bonuses.find({ [field]: /\t|^ | $| {2,}/ }).forEach(question => {
+            for (let i = 0; i < question[field].length; i++) {
+                question[field][i] = question[field][i]
+                    .replace(/\t/g, ' ')
+                    .replace(/ {2,}/g, ' ')
+                    .trim();
+            }
+
+            bonuses.updateOne({ _id: question._id }, { $set: { [field]: question[field] } });
 
             counter++;
             if (counter % 100 === 0) {
@@ -150,19 +198,31 @@ async function fixSpaces() {
 
 
 async function listAlternateSubcategories(update = false) {
-    questions.find({
+    tossups.find({
         subcategory: { $in: ['Poetry', 'Drama', 'Long Fiction', 'Short Fiction'] }
     }).forEach(question => {
-        const { _id, type } = question;
-        const text = type === 'tossup'
-            ? question.question + ' ' + question.answer
-            : question.leadin + question.parts.reduce((a, b) => a + ' ' + b, '') + question.answers.reduce((a, b) => a + ' ' + b, '');
-
+        const { _id } = question;
+        const text = question.question + ' ' + question.answer;
         console.log(JSON.stringify({ _id, text }));
     });
 
     if (update) {
-        console.log(await questions.updateMany(
+        console.log(await tossups.updateMany(
+            { subcategory: { $in: ['Poetry', 'Drama', 'Long Fiction', 'Short Fiction'] } },
+            { $rename: { subcategory: 'alternate_subcategory' } }
+        ));
+    }
+
+    bonuses.find({
+        subcategory: { $in: ['Poetry', 'Drama', 'Long Fiction', 'Short Fiction'] }
+    }).forEach(question => {
+        const { _id } = question;
+        const text = question.leadin + question.parts.reduce((a, b) => a + ' ' + b, '') + question.answers.reduce((a, b) => a + ' ' + b, '');
+        console.log(JSON.stringify({ _id, text }));
+    });
+
+    if (update) {
+        console.log(await bonuses.updateMany(
             { subcategory: { $in: ['Poetry', 'Drama', 'Long Fiction', 'Short Fiction'] } },
             { $rename: { subcategory: 'alternate_subcategory' } }
         ));
@@ -171,21 +231,32 @@ async function listAlternateSubcategories(update = false) {
 
 
 function listQuestionsWithoutSubcategory() {
-    questions.find({ subcategory: { $exists: false } })
+    tossups.find({ subcategory: { $exists: false } })
         .forEach(question => {
-            const { _id, type } = question;
-            const text = type === 'tossup'
-                ? question.question + ' ' + question.answer
-                : question.leadin + question.parts.reduce((a, b) => a + ' ' + b, '') + question.answers.reduce((a, b) => a + ' ' + b, '');
+            const { _id } = question;
+            const text = question.question + ' ' + question.answer;
+            console.log(JSON.stringify({ _id, text }));
+        });
 
+    bonuses.find({ subcategory: { $exists: false } })
+        .forEach(question => {
+            const { _id } = question;
+            const text = question.leadin + question.parts.reduce((a, b) => a + ' ' + b, '') + question.answers.reduce((a, b) => a + ' ' + b, '');
             console.log(JSON.stringify({ _id, text }));
         });
 }
 
 
 function listSetsWithAnswerFormatting() {
-    questions.aggregate([
-        { $match: { $or: [{ formatted_answer: { $exists: true } }, { formatted_answers: { $exists: true } }] } },
+    tossups.aggregate([
+        { $match: { formatted_answer: { $exists: true } } },
+        { $group: { _id: '$setName' } }
+    ]).forEach(set => {
+        console.log(set._id);
+    });
+
+    bonuses.aggregate([
+        { $match: { formatted_answers: { $exists: true } } },
         { $group: { _id: '$setName' } }
     ]).forEach(set => {
         console.log(set._id);
@@ -194,7 +265,14 @@ function listSetsWithAnswerFormatting() {
 
 
 function listSetsWithoutField(field) {
-    questions.aggregate([
+    tossups.aggregate([
+        { $match: { [field]: { $exists: false } } },
+        { $group: { _id: '$setName' } }
+    ]).forEach(set => {
+        console.log(set._id);
+    });
+
+    bonuses.aggregate([
         { $match: { [field]: { $exists: false } } },
         { $group: { _id: '$setName' } }
     ]).forEach(set => {
@@ -207,7 +285,14 @@ async function renameSet(oldName, newName) {
     const set = await sets.findOneAndUpdate({ name: oldName }, { $set: { name: newName } }).then(result => result.value);
     console.log(set._id);
 
-    questions.updateMany(
+    tossups.updateMany(
+        { set: set._id },
+        { $set: { setName: newName, updatedAt: new Date() } }
+    ).then(result => {
+        console.log(result);
+    });
+
+    bonuses.updateMany(
         { set: set._id },
         { $set: { setName: newName, updatedAt: new Date() } }
     ).then(result => {
@@ -217,17 +302,15 @@ async function renameSet(oldName, newName) {
 
 
 async function sanitizeLeadin() {
-    const field = 'leadin';
-
-    const count = await questions.countDocuments({ [field]: { $regex: /\[(10)?[EMH]\].*ANSWER:/i } });
+    const count = await bonuses.countDocuments({ leadin: { $regex: /\[(10)?[EMH]\].*ANSWER:/i } });
     console.log(count);
 
     let counter = 0;
 
-    questions.find({ [field]: { $regex: /\[(10)?[EMH]\].*ANSWER:/i } }).forEach(question => {
-        questions.updateOne(
+    bonuses.find({ leadin: { $regex: /\[(10)?[EMH]\].*ANSWER:/i } }).forEach(question => {
+        bonuses.updateOne(
             { _id: question._id },
-            { $set: { [field]: question[field].replace(/\[(10)?[EMH]\].*ANSWER:/i, '').trim(), updatedAt: new Date() } }
+            { $set: { leadin: question.leadin.replace(/\[(10)?[EMH]\].*ANSWER:/i, '').trim(), updatedAt: new Date() } }
         );
 
         counter++;
@@ -245,7 +328,27 @@ function standardizeSubcategories() {
 
     let counter = 0;
 
-    questions.find(
+    tossups.find(
+        { subcategory: { $nin: Object.keys(cats) } },
+        { projection: { _id: 1, category: 1, subcategory: 1 } },
+    ).forEach(question => {
+        counter++;
+        if (question.subcategory === undefined || question.subcategory in cats) return;
+
+        if (question.subcategory in subcats) {
+            console.log(`${question.subcategory} -> ${subcats[question.subcategory]}`);
+            question.subcategory = subcats[question.subcategory];
+            updateOneSubcategory(question._id, question.subcategory, false);
+        } else {
+            console.log(`${question.subcategory} not found`);
+        }
+
+        if (counter % 5000 === 0) {
+            console.log(counter);
+        }
+    });
+
+    bonuses.find(
         { subcategory: { $nin: Object.keys(cats) } },
         { projection: { _id: 1, category: 1, subcategory: 1 } },
     ).forEach(question => {
@@ -267,7 +370,7 @@ function standardizeSubcategories() {
 }
 
 
-async function updateOneSubcategory(_id, subcategory, clearReports = true) {
+async function updateOneSubcategory(_id, subcategory, type, clearReports = true) {
     if (!(subcategory in cats)) {
         console.log(`Subcategory ${subcategory} not found`);
         return;
@@ -278,12 +381,18 @@ async function updateOneSubcategory(_id, subcategory, clearReports = true) {
     if (clearReports)
         updateDoc['$unset'] = { reports: 1 };
 
-    return await questions.updateOne({ _id: ObjectId(_id) }, updateDoc);
+    if (type === 'tossup') {
+        return await tossups.updateOne({ _id: ObjectId(_id) }, updateDoc);
+    }
+
+    if (type === 'bonus') {
+        bonuses.updateOne({ _id: ObjectId(_id) }, updateDoc);
+    }
 }
 
 
 /**
- * Each line of the file at `filename` should be a valid JSON object with a `_id`, `category`, and `subcategory` field.
+ * Each line of the file at `filename` should be a valid JSON object with a `_id`, `type`, `category`, and `subcategory` field.
  * This function updates each document located at `_id` with the corresponding `category` and `subcategory`.
  * @param {String} filename the file from which to read in data for the categories
  */
@@ -297,8 +406,8 @@ async function updateManySubcategories(filename) {
         if (line === '')
             continue;
 
-        const { _id, subcategory } = JSON.parse(line);
-        const result = await updateOneSubcategory(_id, subcategory, false);
+        const { _id, subcategory, type } = JSON.parse(line);
+        const result = await updateOneSubcategory(_id, subcategory, type, false);
 
         counter++;
         if (counter % 100 == 0) {
@@ -309,17 +418,28 @@ async function updateManySubcategories(filename) {
 }
 
 
-function updateSetDifficulty(setName, difficulty) {
+async function updateSetDifficulty(setName, difficulty) {
     sets.updateOne({ name: setName }, { $set: { difficulty: difficulty } });
 
-    sets.find({ name: setName }).forEach(set => {
-        questions.updateMany(
-            { set: set._id },
-            { $set: { difficulty: difficulty, updatedAt: new Date() } },
-            (err, result) => {
-                if (err) console.log(err);
+    const set = await sets.findOne({ name: setName });
 
-                console.log(`Updated ${set.name} difficulty to ${difficulty}`);
-            });
-    });
+    tossups.updateMany(
+        { set: set._id },
+        { $set: { difficulty: difficulty, updatedAt: new Date() } },
+        (err, _result) => {
+            if (err)
+                console.log(err);
+
+            console.log(`Updated ${set.name} difficulty to ${difficulty}`);
+        });
+
+    bonuses.updateMany(
+        { set: set._id },
+        { $set: { difficulty: difficulty, updatedAt: new Date() } },
+        (err, _result) => {
+            if (err)
+                console.log(err);
+
+            console.log(`Updated ${set.name} difficulty to ${difficulty}`);
+        });
 }
