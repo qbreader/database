@@ -17,14 +17,13 @@ const database = client.db('qbreader');
 const tossups = database.collection('tossups');
 const bonuses = database.collection('bonuses');
 
-const reportReasons = [ 'wrong-category', 'answerline-parsing', 'answerline-formatting', 'missing-parts', 'unnecessary-text' ];
+const reportReasons = [ 'wrong-category', 'answerline-parsing', 'text-error', 'answerline-formatting', 'missing-parts', 'unnecessary-text', ];
 
-function listReports({ bashHighlighting = true, allowedReasons = reportReasons, questionTypes = ['tossup', 'bonus'] } = {}) {
+function listReports({ bashHighlighting = true, allowedReasons = reportReasons } = {}) {
     tossups.aggregate([
         { $match: {
-            $or: [{ formatted_answer: { $exists: true } }, { formatted_answers: { $exists: true } }],
+            formatted_answer: { $exists: true },
             reports: { $exists: true },
-            type: { $in: questionTypes },
         } },
         { $sort: { setName: 1, reports: 1 } },
     ]).forEach(async question => {
@@ -40,7 +39,6 @@ function listReports({ bashHighlighting = true, allowedReasons = reportReasons, 
 
         console.log(tossupToString(question, bashHighlighting));
 
-
         for (let i = 0; i < question.reports.length; i++) {
             console.log(`${bashHighlighting ? bcolors.HEADER : ''}Reason:${bashHighlighting ? bcolors.ENDC : ''} ${question.reports[i].reason}`);
             console.log(`${bashHighlighting ? bcolors.HEADER : ''}Description:${bashHighlighting ? bcolors.ENDC : ''} ${question.reports[i].description}`);
@@ -50,9 +48,8 @@ function listReports({ bashHighlighting = true, allowedReasons = reportReasons, 
 
     bonuses.aggregate([
         { $match: {
-            $or: [{ formatted_answer: { $exists: true } }, { formatted_answers: { $exists: true } }],
+            formatted_answers: { $exists: true },
             reports: { $exists: true },
-            type: { $in: questionTypes },
         } },
         { $sort: { setName: 1, reports: 1 } },
     ]).forEach(async question => {
@@ -76,5 +73,5 @@ function listReports({ bashHighlighting = true, allowedReasons = reportReasons, 
     });
 }
 
-listReports({ allowedReasons: [ 'wrong-category', 'answerline-formatting', 'missing-parts', 'unnecessary-text' ] });
-// listReports();
+// listReports({ allowedReasons: [ 'wrong-category', 'answerline-formatting', 'missing-parts', 'unnecessary-text' ] });
+listReports();
