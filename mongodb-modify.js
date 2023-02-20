@@ -386,7 +386,7 @@ async function updateOneSubcategory(_id, subcategory, type, clearReports = true)
     }
 
     if (type === 'bonus') {
-        bonuses.updateOne({ _id: ObjectId(_id) }, updateDoc);
+        return await bonuses.updateOne({ _id: ObjectId(_id) }, updateDoc);
     }
 }
 

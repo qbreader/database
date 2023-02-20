@@ -9,18 +9,20 @@ const { MongoClient, ObjectId } = require('mongodb');
 
 const uri = `mongodb+srv://${process.env.MONGODB_USERNAME || 'geoffreywu42'}:${process.env.MONGODB_PASSWORD || 'password'}@qbreader.0i7oej9.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri);
-client.connect().then(() => {
+client.connect().then(async () => {
     console.log('connected to mongodb');
+    await listReports();
+    client.close();
 });
 
 const database = client.db('qbreader');
 const tossups = database.collection('tossups');
 const bonuses = database.collection('bonuses');
 
-const reportReasons = [ 'wrong-category', 'answerline-parsing', 'text-error', 'answerline-formatting', 'missing-parts', 'unnecessary-text', ];
+const reportReasons = [ 'wrong-category', 'answerline-parsing', 'text-error', ];
 
-function listReports({ bashHighlighting = true, allowedReasons = reportReasons } = {}) {
-    tossups.aggregate([
+async function listReports({ bashHighlighting = true, allowedReasons = reportReasons } = {}) {
+    await tossups.aggregate([
         { $match: {
             formatted_answer: { $exists: true },
             reports: { $exists: true },
@@ -46,7 +48,7 @@ function listReports({ bashHighlighting = true, allowedReasons = reportReasons }
         }
     });
 
-    bonuses.aggregate([
+    await bonuses.aggregate([
         { $match: {
             formatted_answers: { $exists: true },
             reports: { $exists: true },
@@ -74,4 +76,3 @@ function listReports({ bashHighlighting = true, allowedReasons = reportReasons }
 }
 
 // listReports({ allowedReasons: [ 'wrong-category', 'answerline-formatting', 'missing-parts', 'unnecessary-text' ] });
-listReports();
