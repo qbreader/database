@@ -8,7 +8,6 @@ const uri = `mongodb+srv://${process.env.MONGODB_USERNAME || 'geoffreywu42'}:${p
 const client = new MongoClient(uri);
 client.connect().then(async () => {
     console.log('connected to mongodb');
-    client.close();
 });
 
 const database = client.db('qbreader');
@@ -430,7 +429,7 @@ async function updateSetDifficulty(setName, difficulty) {
             if (err)
                 console.log(err);
 
-            console.log(`Updated ${set.name} difficulty to ${difficulty}`);
+            console.log(`Updated ${set.name} difficulty to ${difficulty} for tossups`);
         });
 
     bonuses.updateMany(
@@ -440,6 +439,6 @@ async function updateSetDifficulty(setName, difficulty) {
             if (err)
                 console.log(err);
 
-            console.log(`Updated ${set.name} difficulty to ${difficulty}`);
+            console.log(`Updated ${set.name} difficulty to ${difficulty} for bonuses`);
         });
 }
