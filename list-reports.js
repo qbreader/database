@@ -19,7 +19,7 @@ const database = client.db('qbreader');
 const tossups = database.collection('tossups');
 const bonuses = database.collection('bonuses');
 
-const reportReasons = [ 'wrong-category', 'answerline-parsing', 'text-error', ];
+const reportReasons = [ 'wrong-category', 'text-error', 'answer-checking', ];
 
 async function listReports({ bashHighlighting = true, allowedReasons = reportReasons } = {}) {
     await tossups.aggregate([
