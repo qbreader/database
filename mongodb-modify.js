@@ -301,15 +301,16 @@ async function renameSet(oldName, newName) {
 
 
 async function sanitizeLeadin() {
-    const count = await bonuses.countDocuments({ leadin: { $regex: /\[(10)?[EMH]\].*ANSWER:/i } });
+    const regExp = /(?<=each:) {2}.*/i;
+    const count = await bonuses.countDocuments({ leadin: { $regex: regExp } });
     console.log(count);
 
     let counter = 0;
 
-    bonuses.find({ leadin: { $regex: /\[(10)?[EMH]\].*ANSWER:/i } }).forEach(question => {
+    bonuses.find({ leadin: { $regex: regExp } }).forEach(question => {
         bonuses.updateOne(
             { _id: question._id },
-            { $set: { leadin: question.leadin.replace(/\[(10)?[EMH]\].*ANSWER:/i, '').trim(), updatedAt: new Date() } }
+            { $set: { leadin: question.leadin.replace(regExp, '').trim(), updatedAt: new Date() } }
         );
 
         counter++;
