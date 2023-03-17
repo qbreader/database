@@ -12,6 +12,7 @@ const client = new MongoClient(uri);
 client.connect().then(async () => {
     console.log('connected to mongodb');
     await listReports();
+    // await listReports({ allowedReasons: [ 'wrong-category' ] });
     client.close();
 });
 
@@ -25,20 +26,10 @@ async function listReports({ bashHighlighting = true, allowedReasons = reportRea
     await tossups.aggregate([
         { $match: {
             formatted_answer: { $exists: true },
-            reports: { $exists: true },
+            'reports.reason': { $in: allowedReasons },
         } },
         { $sort: { setName: 1, reports: 1 } },
     ]).forEach(async question => {
-        let hasAllowedReason = false;
-
-        for (const reason of allowedReasons) {
-            if (question.reports.map(report => report.reason).includes(reason))
-                hasAllowedReason = true;
-        }
-
-        if (!hasAllowedReason)
-            return;
-
         console.log(tossupToString(question, bashHighlighting));
 
         for (let i = 0; i < question.reports.length; i++) {
@@ -51,20 +42,10 @@ async function listReports({ bashHighlighting = true, allowedReasons = reportRea
     await bonuses.aggregate([
         { $match: {
             formatted_answers: { $exists: true },
-            reports: { $exists: true },
+            'reports.reason': { $in: allowedReasons },
         } },
         { $sort: { setName: 1, reports: 1 } },
     ]).forEach(async question => {
-        let hasAllowedReason = false;
-
-        for (const reason of allowedReasons) {
-            if (question.reports.map(report => report.reason).includes(reason))
-                hasAllowedReason = true;
-        }
-
-        if (!hasAllowedReason)
-            return;
-
         console.log(bonusToString(question, bashHighlighting));
 
         for (let i = 0; i < question.reports.length; i++) {
@@ -74,5 +55,3 @@ async function listReports({ bashHighlighting = true, allowedReasons = reportRea
         }
     });
 }
-
-// listReports({ allowedReasons: [ 'wrong-category', 'answerline-formatting', 'missing-parts', 'unnecessary-text' ] });
