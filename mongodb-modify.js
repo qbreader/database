@@ -8,7 +8,6 @@ const uri = `mongodb+srv://${process.env.MONGODB_USERNAME || 'geoffreywu42'}:${p
 const client = new MongoClient(uri);
 client.connect().then(async () => {
     console.log('connected to mongodb');
-    updateOneSubcategory('639a46d925fac6a63b2b7f68', 'bonus', 'Social Science');
 });
 
 const database = client.db('qbreader');
