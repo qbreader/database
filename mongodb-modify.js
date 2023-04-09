@@ -57,6 +57,28 @@ function denormalizeSetNames() {
 }
 
 
+function denormalizePacketNames() {
+    let counter = 0;
+    sets.find({}).forEach(set => {
+        counter++;
+        if (counter % 10 === 0) {
+            console.log(`${counter} ${set.name}`);
+        }
+
+        for (const packet of set.packets) {
+            tossups.updateMany(
+                { packet: packet._id },
+                { $set: { packetName: packet.name, updatedAt: new Date() } }
+            );
+            bonuses.updateMany(
+                { packet: packet._id },
+                { $set: { packetName: packet.name, updatedAt: new Date() } }
+            );
+        }
+    });
+}
+
+
 function denormalizeSetYears() {
     let counter = 0;
     sets.find({}).forEach(set => {

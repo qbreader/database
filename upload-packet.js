@@ -74,6 +74,7 @@ client.connect().then(async () => {
         tossup.setName = setName;
         tossup.type = 'tossup';
         tossup.packetNumber = packetNumber;
+        tossup.packetName = packetNumber;
         tossup.questionNumber = tossup.questionNumber || (index + 1);
         tossup.createdAt = tossup.createdAt || new Date();
         tossup.updatedAt = tossup.updatedAt || new Date();
