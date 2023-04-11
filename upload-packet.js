@@ -83,8 +83,6 @@ client.connect().then(async () => {
     });
 
     data.bonuses.forEach((bonus, index) => {
-        delete bonus.values;
-
         for (let i = 0; i < bonus.parts.length; i++) {
             bonus.parts[i] = bonus.parts[i]
                 .replace(/\t/g, ' ')
