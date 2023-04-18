@@ -21,11 +21,17 @@ const { tossupToString, bonusToString } = require('./stringify');
 
 
 function clearReports() {
-    tossups.updateMany({ reports: { $exists: true } }, { $unset: { reports: '' } }).then(result => {
+    tossups.updateMany(
+        { reports: { $exists: true } },
+        { $unset: { reports: '' } },
+    ).then(result => {
         console.log(result);
     });
 
-    bonuses.updateMany({ reports: { $exists: true } }, { $unset: { reports: '' } }).then(result => {
+    bonuses.updateMany(
+        { reports: { $exists: true } },
+        { $unset: { reports: '' } },
+    ).then(result => {
         console.log(result);
     });
 }
@@ -47,12 +53,14 @@ function denormalizeSetNames() {
             console.log(`${counter} ${set.name}`);
         }
 
-        tossups.updateMany({
-            set: set._id
-        }, { $set: { setName: set.name, updatedAt: new Date() } });
-        bonuses.updateMany({
-            set: set._id
-        }, { $set: { setName: set.name, updatedAt: new Date() } });
+        tossups.updateMany(
+            { set: set._id },
+            { $set: { setName: set.name, updatedAt: new Date() } }
+        );
+        bonuses.updateMany(
+            { set: set._id },
+            { $set: { setName: set.name, updatedAt: new Date() } }
+        );
     });
 }
 
