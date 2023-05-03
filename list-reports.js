@@ -11,7 +11,7 @@ const uri = `mongodb+srv://${process.env.MONGODB_USERNAME || 'geoffreywu42'}:${p
 const client = new MongoClient(uri);
 client.connect().then(async () => {
     console.log('connected to mongodb');
-    // // await listReports();
+    // await listReports();
     // await listReports({ allowedReasons: [ 'wrong-category' ] });
     // await listReports({ allowedReasons: [ 'text-error' ] });
     // await listReports({ allowedReasons: [ 'answer-checking' ] });
