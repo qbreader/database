@@ -8,6 +8,7 @@ const uri = `mongodb+srv://${process.env.MONGODB_USERNAME || 'geoffreywu42'}:${p
 const client = new MongoClient(uri);
 client.connect().then(async () => {
     console.log('connected to mongodb');
+    client.close();
 });
 
 const database = client.db('qbreader');
