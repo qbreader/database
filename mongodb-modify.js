@@ -11,10 +11,14 @@ client.connect().then(async () => {
     client.close();
 });
 
-const database = client.db('qbreader');
-const sets = database.collection('sets');
-const tossups = database.collection('tossups');
-const bonuses = database.collection('bonuses');
+const questionDatabase = client.db('qbreader');
+const sets = questionDatabase.collection('sets');
+const tossups = questionDatabase.collection('tossups');
+const bonuses = questionDatabase.collection('bonuses');
+
+const accountInfo = client.db('account-info');
+const tossupData = accountInfo.collection('tossup-data');
+const bonusData = accountInfo.collection('bonus-data');
 
 
 const cats = require('./subcat-to-cat.json');
@@ -43,6 +47,8 @@ async function deleteSet(setName) {
     sets.deleteOne({ name: setName });
     console.log(await tossups.deleteMany({ set: set._id }));
     console.log(await bonuses.deleteMany({ set: set._id }));
+    console.log(await tossupData.deleteMany({ set_id: set._id }));
+    console.log(await bonusData.deleteMany({ set_id: set._id }));
 }
 
 
@@ -495,11 +501,22 @@ function standardizeSubcategories() {
     });
 }
 
-
+/**
+ *
+ * @param {String | ObjectId} _id the id of the question to update
+ * @param {'tossup' | 'bonus'} type the type of question to update
+ * @param {String} subcategory the new subcategory to set
+ * @param {Boolean} clearReports whether to clear the reports field
+ * @returns {Promise<UpdateResult>}
+ */
 async function updateOneSubcategory(_id, type, subcategory, clearReports = true) {
     if (!(subcategory in cats)) {
         console.log(`Subcategory ${subcategory} not found`);
         return;
+    }
+
+    if (typeof _id === 'string') {
+        _id = new ObjectId(_id);
     }
 
     const updateDoc = { $set: { category: cats[subcategory], subcategory: subcategory, updatedAt: new Date() } };
@@ -507,11 +524,12 @@ async function updateOneSubcategory(_id, type, subcategory, clearReports = true)
     if (clearReports)
         updateDoc['$unset'] = { reports: 1 };
 
-    if (type === 'tossup') {
-        return await tossups.updateOne({ _id: ObjectId(_id) }, updateDoc);
-    }
-
-    if (type === 'bonus') {
+    switch (type) {
+    case 'tossup':
+        tossupData.updateMany({ tossup_id: _id }, { $set: { category: cats[subcategory], subcategory: subcategory } });
+        return await tossups.updateOne({ _id: _id }, updateDoc);
+    case 'bonus':
+        bonusData.updateMany({ bonus_id: _id }, { $set: { category: cats[subcategory], subcategory: subcategory } });
         return await bonuses.updateOne({ _id: ObjectId(_id) }, updateDoc);
     }
 }
@@ -548,6 +566,16 @@ async function updateSetDifficulty(setName, difficulty) {
     sets.updateOne({ name: setName }, { $set: { difficulty: difficulty } });
 
     const set = await sets.findOne({ name: setName });
+
+    tossupData.updateMany(
+        { set_id: set._id },
+        { $set: { difficulty: difficulty } },
+    );
+
+    bonusData.updateMany(
+        { set_id: set._id },
+        { $set: { difficulty: difficulty } },
+    );
 
     tossups.updateMany(
         { set: set._id },
