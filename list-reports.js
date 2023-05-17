@@ -5,7 +5,7 @@ if (process.env.NODE_ENV !== 'production') {
 const bcolors = require('./bcolors');
 const { tossupToString, bonusToString } = require('./stringify');
 
-const { MongoClient, ObjectId } = require('mongodb');
+const { MongoClient } = require('mongodb');
 
 const uri = `mongodb+srv://${process.env.MONGODB_USERNAME || 'geoffreywu42'}:${process.env.MONGODB_PASSWORD || 'password'}@qbreader.0i7oej9.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri);
