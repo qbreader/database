@@ -5,11 +5,11 @@ if (process.env.NODE_ENV !== 'production') {
 const fs = require('fs');
 const { MongoClient, ObjectId } = require('mongodb');
 
-const setName = '2021 HARI';
-const packetNumber = 14;
+const setName = '2011 ACF Nationals';
+const packetNumber = 21;
+const packetName = 'UCLAASUIllinoisBCMU';
 
-
-const data = JSON.parse(fs.readFileSync(`${packetNumber}.json`));
+const data = JSON.parse(fs.readFileSync(`${packetName}.json`));
 
 const uri = `mongodb+srv://${process.env.MONGODB_USERNAME || 'geoffreywu42'}:${process.env.MONGODB_PASSWORD || 'password'}@qbreader.0i7oej9.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri);
@@ -28,7 +28,7 @@ client.connect().then(async () => {
     const packetID = await sets.findOne({ name: setName }).then(async set => {
         if (set.packets.length + 1 == packetNumber) {
             const id = new ObjectId();
-            await sets.updateOne({ name: setName }, { $push: { packets: { _id: id, name: packetNumber, tossups: [], bonuses: [] } } });
+            await sets.updateOne({ name: setName }, { $push: { packets: { _id: id, name: packetName, tossups: [], bonuses: [] } } });
             return id;
         } else if (set.packets.length < packetNumber) {
             throw new Error('Packet number is too high');
@@ -74,7 +74,7 @@ client.connect().then(async () => {
         tossup.setName = setName;
         tossup.type = 'tossup';
         tossup.packetNumber = packetNumber;
-        tossup.packetName = packetNumber;
+        tossup.packetName = packetName;
         tossup.questionNumber = tossup.questionNumber || (index + 1);
         tossup.createdAt = tossup.createdAt || new Date();
         tossup.updatedAt = tossup.updatedAt || new Date();
@@ -110,6 +110,7 @@ client.connect().then(async () => {
         bonus.setName = setName;
         bonus.type = 'bonus';
         bonus.packetNumber = packetNumber;
+        bonus.packetName = packetName;
         bonus.questionNumber = bonus.questionNumber || (index + 1);
         bonus.createdAt = bonus.createdAt || new Date();
         bonus.updatedAt = bonus.updatedAt || new Date();
