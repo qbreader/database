@@ -1,7 +1,8 @@
 /**
  * Replace the set with the same name in the database with the set in the folder
  * without changing the ObjectId of any documents.
- * This also does not affect the setName or packetName of any document,
+ * This also updates the packet names of all matching documents.
+ * This also does not affect the setName of any document,
  * and does **not** create new documents if they do not exist (e.g. if a packet is missing).
  */
 
@@ -29,19 +30,25 @@ client.connect().then(async () => {
     const bonusBulk = bonuses.initializeUnorderedBulkOp();
 
     const set = await sets.findOne({ name: SET_NAME });
+    const setUpdateDoc = {};
 
     let packetNumber = 0;
-    fs.readdirSync(SET_NAME).sort().forEach((packetName) => {
-        if (!packetName.endsWith('.json'))
+    fs.readdirSync(SET_NAME).sort().forEach((fileName) => {
+        if (!fileName.endsWith('.json')) {
             return;
+        } else {
+            packetNumber++;
+        }
 
-        packetNumber++;
         if (packetNumber - 1 >= set.packets.length) {
             throw new Error('Packet number is too high');
         }
         const packet_id = set.packets[packetNumber - 1]._id;
 
-        const data = JSON.parse(fs.readFileSync(`${SET_NAME}/${packetName}`));
+        const packetName = fileName.slice(0, -5);
+        setUpdateDoc[`packets.${packetNumber - 1}.name`] = packetName;
+
+        const data = JSON.parse(fs.readFileSync(`${SET_NAME}/${fileName}`));
 
         if (data.tossups) {
             data.tossups.forEach((tossup, index) => {
@@ -70,12 +77,13 @@ client.connect().then(async () => {
                         updatedAt: new Date(),
                         category: tossup.category,
                         subcategory: tossup.subcategory,
+                        packetName: packetName,
                     }
                 };
                 tossupBulk.find({ packet: packet_id, questionNumber: index + 1 }).updateOne(updateDoc);
             });
         } else {
-            console.log('no tossups for ' + SET_NAME + '/' + packetName);
+            console.log('no tossups for ' + SET_NAME + '/' + fileName);
         }
 
         if (data.bonuses) {
@@ -112,15 +120,17 @@ client.connect().then(async () => {
                         subcategory: bonus.subcategory,
                         values: bonus.values,
                         difficulties: bonus.difficulties,
+                        packetName: packetName,
                     }
                 };
                 bonusBulk.find({ packet: packet_id, questionNumber: index + 1 }).updateOne(updateDoc);
             });
         } else {
-            console.log('no bonuses for ' + SET_NAME + '/' + packetName);
+            console.log('no bonuses for ' + SET_NAME + '/' + fileName);
         }
     });
 
+    console.log(await sets.updateOne({ name: SET_NAME }, { $set: setUpdateDoc }));
     console.log(await tossupBulk.execute());
     console.log(await bonusBulk.execute());
 });
