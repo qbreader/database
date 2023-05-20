@@ -391,6 +391,35 @@ function listSetsWithoutField(field) {
 }
 
 
+async function printMostReadBonuses(limit = 1) {
+    await bonusData.aggregate([
+        { $match: { bonus_id: { $exists: true } } },
+        { $group: { _id: '$bonus_id', count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+        { $limit: limit }
+    ]).forEach(result => {
+        bonuses.findOne({ _id: result._id }).then(question => {
+            console.log(`Number of times read: ${result.count}`);
+            console.log(bonusToString(question));
+        });
+    });
+}
+
+
+async function printMostReadTossups(limit = 1) {
+    await tossupData.aggregate([
+        { $match: { tossup_id: { $exists: true } } },
+        { $group: { _id: '$tossup_id', count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+        { $limit: limit }
+    ]).forEach(result => {
+        tossups.findOne({ _id: result._id }).then(question => {
+            console.log(tossupToString(question));
+        });
+    });
+}
+
+
 async function renameSet(oldName, newName) {
     const set = await sets.findOneAndUpdate({ name: oldName }, { $set: { name: newName } }).then(result => result.value);
     console.log(set._id);
