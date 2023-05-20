@@ -2,8 +2,9 @@
  * Replace the set with the same name in the database with the set in the folder
  * without changing the ObjectId of any documents.
  * This also updates the packet names of all matching documents.
- * This also does not affect the setName of any document,
- * and does **not** create new documents if they do not exist (e.g. if a packet is missing).
+ * This also does not affect the setName of any document.
+ * This creates new documents/questions if they do not exist in a packet,
+ * but it does **not** create new packets.
  */
 
 /**
@@ -41,7 +42,9 @@ client.connect().then(async () => {
         }
 
         if (packetNumber - 1 >= set.packets.length) {
-            throw new Error('Packet number is too high');
+            console.log(`Packet number ${packetNumber} is too high for packet ${fileName}`);
+            return;
+            // throw new Error('Packet number is too high');
         }
         const packet_id = set.packets[packetNumber - 1]._id;
 
@@ -80,7 +83,21 @@ client.connect().then(async () => {
                         packetName: packetName,
                     }
                 };
-                tossupBulk.find({ packet: packet_id, questionNumber: index + 1 }).updateOne(updateDoc);
+                if (index < set.packets[packetNumber - 1].tossups.length) {
+                    tossupBulk.find({ packet: packet_id, questionNumber: index + 1 }).updateOne(updateDoc);
+                } else {
+                    tossupBulk.insert({
+                        packet: packet_id,
+                        questionNumber: index + 1,
+                        set: set._id,
+                        type: 'tossup',
+                        createdAt: new Date(),
+                        packetNumber: packetNumber,
+                        setName: SET_NAME,
+                        setYear: set.year,
+                        ...updateDoc.$set,
+                    });
+                }
             });
         } else {
             console.log('no tossups for ' + SET_NAME + '/' + fileName);
@@ -123,7 +140,21 @@ client.connect().then(async () => {
                         packetName: packetName,
                     }
                 };
-                bonusBulk.find({ packet: packet_id, questionNumber: index + 1 }).updateOne(updateDoc);
+                if (index < set.packets[packetNumber - 1].tossups.length) {
+                    bonusBulk.find({ packet: packet_id, questionNumber: index + 1 }).updateOne(updateDoc);
+                } else {
+                    bonusBulk.insert({
+                        packet: packet_id,
+                        questionNumber: index + 1,
+                        set: set._id,
+                        type: 'bonus',
+                        createdAt: new Date(),
+                        packetNumber: packetNumber,
+                        setName: SET_NAME,
+                        setYear: set.year,
+                        ...updateDoc.$set,
+                    });
+                }
             });
         } else {
             console.log('no bonuses for ' + SET_NAME + '/' + fileName);
