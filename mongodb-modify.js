@@ -497,7 +497,7 @@ function standardizeSubcategories() {
         if (question.subcategory in subcats) {
             console.log(`${question.subcategory} -> ${subcats[question.subcategory]}`);
             question.subcategory = subcats[question.subcategory];
-            updateOneSubcategory(question._id, question.subcategory, false);
+            updateOneSubcategory(question._id, 'tossup', question.subcategory, false);
         } else {
             console.log(`${question.subcategory} not found`);
         }
@@ -517,7 +517,7 @@ function standardizeSubcategories() {
         if (question.subcategory in subcats) {
             console.log(`${question.subcategory} -> ${subcats[question.subcategory]}`);
             question.subcategory = subcats[question.subcategory];
-            updateOneSubcategory(question._id, question.subcategory, false);
+            updateOneSubcategory(question._id, 'bonus', question.subcategory, false);
         } else {
             console.log(`${question.subcategory} not found`);
         }
@@ -578,7 +578,7 @@ async function updateManySubcategories(filename) {
             continue;
 
         const { _id, subcategory, type } = JSON.parse(line);
-        const result = await updateOneSubcategory(_id, subcategory, type, false);
+        const result = await updateOneSubcategory(_id, type, subcategory, false);
 
         counter++;
         if (counter % 100 == 0) {
