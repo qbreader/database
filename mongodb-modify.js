@@ -418,6 +418,25 @@ async function printMostReadTossups(limit = 1) {
 }
 
 
+async function renamePacket(setName, packetNumber, newPacketName) {
+    const set = await sets.findOne({ name: setName });
+    const packet = set.packets[packetNumber - 1];
+    await sets.updateOne(
+        { _id: set._id },
+        { $set: { [`packets.${packetNumber - 1}.name`]: newPacketName } }
+    );
+
+    console.log(await tossups.updateMany(
+        { packet: packet._id },
+        { $set: { packetName: newPacketName, updatedAt: new Date() } }
+    ));
+    console.log(await bonuses.updateMany(
+        { packet: packet._id },
+        { $set: { packetName: newPacketName, updatedAt: new Date() } }
+    ));
+}
+
+
 async function renameSet(oldName, newName) {
     const set = await sets.findOneAndUpdate({ name: oldName }, { $set: { name: newName } }).then(result => result.value);
     console.log(set._id);
