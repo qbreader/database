@@ -412,6 +412,7 @@ async function printMostReadTossups(limit = 1) {
         { $limit: limit }
     ]).forEach(result => {
         tossups.findOne({ _id: result._id }).then(question => {
+            console.log(`Number of times read: ${result.count}`);
             console.log(tossupToString(question));
         });
     });
