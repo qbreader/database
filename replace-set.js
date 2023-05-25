@@ -81,6 +81,9 @@ client.connect().then(async () => {
                         category: tossup.category,
                         subcategory: tossup.subcategory,
                         packetName: packetName,
+                    },
+                    $unset: {
+                        reports: '',
                     }
                 };
                 if (index < set.packets[packetNumber - 1].tossups.length) {
@@ -138,6 +141,9 @@ client.connect().then(async () => {
                         values: bonus.values,
                         difficulties: bonus.difficulties,
                         packetName: packetName,
+                    },
+                    $unset: {
+                        reports: '',
                     }
                 };
                 if (index < set.packets[packetNumber - 1].tossups.length) {
