@@ -588,7 +588,7 @@ async function updateOneSubcategory(_id, type, subcategory, clearReports = true)
  * This function updates each document located at `_id` with the corresponding `category` and `subcategory`.
  * @param {String} filename the file from which to read in data for the categories
  */
-async function updateManySubcategories(filename) {
+async function updateManySubcategories(filename='input.txt') {
     const fs = require('fs');
     const data = fs.readFileSync(filename, { encoding: 'utf-8' });
 
