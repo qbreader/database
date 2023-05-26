@@ -146,7 +146,7 @@ client.connect().then(async () => {
                         reports: '',
                     }
                 };
-                if (index < set.packets[packetNumber - 1].tossups.length) {
+                if (index < set.packets[packetNumber - 1].bonuses.length) {
                     bonusBulk.find({ packet: packet_id, questionNumber: index + 1 }).updateOne(updateDoc);
                 } else {
                     bonusBulk.insert({
