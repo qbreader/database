@@ -41,12 +41,13 @@ function clearReports() {
 
 
 async function deleteSet(setName) {
-    const set = await sets.findOne({ name: setName });
-    sets.deleteOne({ name: setName });
-    console.log(await tossups.deleteMany({ set: set._id }));
-    console.log(await bonuses.deleteMany({ set: set._id }));
-    console.log(await tossupData.deleteMany({ set_id: set._id }));
-    console.log(await bonusData.deleteMany({ set_id: set._id }));
+    const result = await sets.findOneAndDelete({ name: setName });
+    const { _id } = result.value;
+
+    console.log(await tossups.deleteMany({ set: _id }));
+    console.log(await bonuses.deleteMany({ set: _id }));
+    console.log(await tossupData.deleteMany({ set_id: _id }));
+    console.log(await bonusData.deleteMany({ set_id: _id }));
 }
 
 
@@ -610,37 +611,26 @@ async function updateManySubcategories(filename) {
 
 
 async function updateSetDifficulty(setName, difficulty) {
-    sets.updateOne({ name: setName }, { $set: { difficulty: difficulty } });
+    const result = await sets.findOneAndUpdate({ name: setName }, { $set: { difficulty: difficulty } });
+    const { _id } = result.value;
 
-    const set = await sets.findOne({ name: setName });
-
-    tossupData.updateMany(
-        { set_id: set._id },
+    await tossupData.updateMany(
+        { set_id: _id },
         { $set: { difficulty: difficulty } },
     );
 
-    bonusData.updateMany(
-        { set_id: set._id },
+    await bonusData.updateMany(
+        { set_id: _id },
         { $set: { difficulty: difficulty } },
     );
 
-    tossups.updateMany(
-        { set: set._id },
+    console.log(await tossups.updateMany(
+        { set: _id },
+        { $set: { difficulty: difficulty, updatedAt: new Date() } }
+    ));
+
+    console.log(await bonuses.updateMany(
+        { set: _id },
         { $set: { difficulty: difficulty, updatedAt: new Date() } },
-        (err, _result) => {
-            if (err)
-                console.log(err);
-
-            console.log(`Updated ${set.name} difficulty to ${difficulty} for tossups`);
-        });
-
-    bonuses.updateMany(
-        { set: set._id },
-        { $set: { difficulty: difficulty, updatedAt: new Date() } },
-        (err, _result) => {
-            if (err)
-                console.log(err);
-
-            console.log(`Updated ${set.name} difficulty to ${difficulty} for bonuses`);
-        });
+    ));
 }
