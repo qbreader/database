@@ -315,13 +315,6 @@ async function listAlternateSubcategories(update = false) {
         console.log(JSON.stringify({ _id, text, type: 'tossup' }));
     });
 
-    if (update) {
-        console.log(await tossups.updateMany(
-            { subcategory: { $in: ['Poetry', 'Drama', 'Long Fiction', 'Short Fiction'] } },
-            { $rename: { subcategory: 'alternate_subcategory' } }
-        ));
-    }
-
     bonuses.find({
         subcategory: { $in: ['Poetry', 'Drama', 'Long Fiction', 'Short Fiction'] }
     }).forEach(question => {
@@ -331,7 +324,22 @@ async function listAlternateSubcategories(update = false) {
     });
 
     if (update) {
+        console.log(await tossups.updateMany(
+            { subcategory: { $in: ['Poetry', 'Drama', 'Long Fiction', 'Short Fiction'] } },
+            { $rename: { subcategory: 'alternate_subcategory' } }
+        ));
+
         console.log(await bonuses.updateMany(
+            { subcategory: { $in: ['Poetry', 'Drama', 'Long Fiction', 'Short Fiction'] } },
+            { $rename: { subcategory: 'alternate_subcategory' } }
+        ));
+
+        console.log(await tossupData.updateMany(
+            { subcategory: { $in: ['Poetry', 'Drama', 'Long Fiction', 'Short Fiction'] } },
+            { $rename: { subcategory: 'alternate_subcategory' } }
+        ));
+
+        console.log(await bonusData.updateMany(
             { subcategory: { $in: ['Poetry', 'Drama', 'Long Fiction', 'Short Fiction'] } },
             { $rename: { subcategory: 'alternate_subcategory' } }
         ));
