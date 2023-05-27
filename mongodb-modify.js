@@ -347,6 +347,40 @@ async function listAlternateSubcategories(update = false) {
 }
 
 
+function getActiveUsersAggregation(limit) {
+    return [
+        { $group: {
+            _id: '$user_id',
+            count: { '$sum': 1 }
+        } },
+        { $sort: {
+            count: -1
+        } },
+        { $lookup: {
+            from: 'users',
+            localField: '_id',
+            foreignField: '_id',
+            as: 'user'
+        } },
+        { $project: {
+            username: { $arrayElemAt: [ '$user.username', 0 ] },
+            _id: 1,
+            count: 1,
+        } },
+        { $limit: limit }
+    ];
+}
+
+async function getMostActiveBonusUsers(limit = 10) {
+    return await bonusData.aggregate(getActiveUsersAggregation(limit)).toArray();
+}
+
+
+async function getMostActiveTossupUsers(limit = 10) {
+    return await tossupData.aggregate(getActiveUsersAggregation(limit)).toArray();
+}
+
+
 function listQuestionsWithoutSubcategory() {
     tossups.find({ subcategory: { $exists: false } })
         .forEach(question => {
