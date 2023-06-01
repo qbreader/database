@@ -6,12 +6,15 @@ const uri = `mongodb+srv://${process.env.MONGODB_USERNAME || 'geoffreywu42'}:${p
 const client = new MongoClient(uri);
 client.connect().then(async () => {
     console.log('connected to mongodb');
+    // printMostActiveUsers(10, 'tossup');
+    // printUserStats('');
     // client.close();
 });
 
 const accountInfo = client.db('account-info');
 const tossupData = accountInfo.collection('tossup-data');
 const bonusData = accountInfo.collection('bonus-data');
+const users = accountInfo.collection('users');
 
 /**
  *
@@ -66,4 +69,29 @@ async function printMostActiveUsers(limit = 10, type = 'tossup') {
     result.forEach((user, index) => {
         console.log(`${(index + 1).toString().padStart(2)}. ${user.username} (${user.count})`);
     });
+}
+
+
+async function printUserStats(username) {
+    const { _id: user_id } = await users.findOne({ username: username });
+    const tossupCount = await tossupData.countDocuments({ user_id: user_id });
+    const bonusCount = await bonusData.countDocuments({ user_id: user_id });
+
+    const aggregation = (count) => [
+        { $group: {
+            _id: '$user_id',
+            count: { '$sum': 1 }
+        } },
+        { $match: {
+            count: { $gte: count }
+        } },
+        { $count: 'position' }
+    ];
+
+    const { position: tossupPosition } = (await tossupData.aggregate(aggregation(tossupCount)).toArray())[0];
+    const { position: bonusPosition } = (await bonusData.aggregate(aggregation(bonusCount)).toArray())[0];
+
+    console.log(`User: ${username} (${user_id}))`);
+    console.log(`Tossups: ${tossupCount} (#${tossupPosition})`);
+    console.log(`Bonuses: ${bonusCount} (#${bonusPosition})`);
 }
