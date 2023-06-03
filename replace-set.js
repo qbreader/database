@@ -12,10 +12,10 @@
  */
 const SET_NAME = '';
 
-require('dotenv').config();
+import 'dotenv/config';
 
-const fs = require('fs');
-const { MongoClient } = require('mongodb');
+import { readdirSync, readFileSync } from 'fs';
+import { MongoClient } from 'mongodb';
 
 const uri = `mongodb+srv://${process.env.MONGODB_USERNAME || 'geoffreywu42'}:${process.env.MONGODB_PASSWORD || 'password'}@qbreader.0i7oej9.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri);
@@ -34,7 +34,7 @@ client.connect().then(async () => {
     const setUpdateDoc = {};
 
     let packetNumber = 0;
-    fs.readdirSync(SET_NAME).sort().forEach((fileName) => {
+    readdirSync(SET_NAME).sort().forEach((fileName) => {
         if (!fileName.endsWith('.json')) {
             return;
         } else {
@@ -51,7 +51,7 @@ client.connect().then(async () => {
         const packetName = fileName.slice(0, -5);
         setUpdateDoc[`packets.${packetNumber - 1}.name`] = packetName;
 
-        const data = JSON.parse(fs.readFileSync(`${SET_NAME}/${fileName}`));
+        const data = JSON.parse(readFileSync(`${SET_NAME}/${fileName}`));
 
         if (data.tossups) {
             data.tossups.forEach((tossup, index) => {

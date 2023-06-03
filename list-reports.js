@@ -1,9 +1,9 @@
-require('dotenv').config();
+import 'dotenv/config';
 
-const bcolors = require('./bcolors');
-const { tossupToString, bonusToString } = require('./stringify');
+import { HEADER, ENDC } from './bcolors.js';
+import { tossupToString, bonusToString } from './stringify.js';
 
-const { MongoClient } = require('mongodb');
+import { MongoClient } from 'mongodb';
 
 const uri = `mongodb+srv://${process.env.MONGODB_USERNAME || 'geoffreywu42'}:${process.env.MONGODB_PASSWORD || 'password'}@qbreader.0i7oej9.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri);
@@ -34,8 +34,8 @@ async function listReports({ bashHighlighting = true, allowedReasons = reportRea
         console.log(tossupToString(question, bashHighlighting));
 
         for (let i = 0; i < question.reports.length; i++) {
-            console.log(`${bashHighlighting ? bcolors.HEADER : ''}Reason:${bashHighlighting ? bcolors.ENDC : ''} ${question.reports[i].reason}`);
-            console.log(`${bashHighlighting ? bcolors.HEADER : ''}Description:${bashHighlighting ? bcolors.ENDC : ''} ${question.reports[i].description}`);
+            console.log(`${bashHighlighting ? HEADER : ''}Reason:${bashHighlighting ? ENDC : ''} ${question.reports[i].reason}`);
+            console.log(`${bashHighlighting ? HEADER : ''}Description:${bashHighlighting ? ENDC : ''} ${question.reports[i].description}`);
             console.log();
         }
     });
@@ -50,8 +50,8 @@ async function listReports({ bashHighlighting = true, allowedReasons = reportRea
         console.log(bonusToString(question, bashHighlighting));
 
         for (let i = 0; i < question.reports.length; i++) {
-            console.log(`${bashHighlighting ? bcolors.HEADER : ''}Reason:${bashHighlighting ? bcolors.ENDC : ''} ${question.reports[i].reason}`);
-            console.log(`${bashHighlighting ? bcolors.HEADER : ''}Description:${bashHighlighting ? bcolors.ENDC : ''} ${question.reports[i].description}`);
+            console.log(`${bashHighlighting ? HEADER : ''}Reason:${bashHighlighting ? ENDC : ''} ${question.reports[i].reason}`);
+            console.log(`${bashHighlighting ? HEADER : ''}Description:${bashHighlighting ? ENDC : ''} ${question.reports[i].description}`);
             console.log();
         }
     });

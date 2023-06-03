@@ -1,4 +1,4 @@
-const bcolors = require('./bcolors');
+import * as bcolors from './bcolors.js';
 
 
 function tossupToString(question, bashHighlighting = true) {
@@ -52,7 +52,4 @@ function bonusToString(question, bashHighlighting = true) {
 }
 
 
-module.exports = {
-    tossupToString,
-    bonusToString,
-};
+export { bonusToString, tossupToString };

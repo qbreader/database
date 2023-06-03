@@ -1,7 +1,7 @@
-require('dotenv').config();
+import 'dotenv/config';
 
-const fs = require('fs');
-const { MongoClient, ObjectId } = require('mongodb');
+import { readdirSync, readFileSync } from 'fs';
+import { MongoClient, ObjectId } from 'mongodb';
 
 const uri = `mongodb+srv://${process.env.MONGODB_USERNAME || 'geoffreywu42'}:${process.env.MONGODB_PASSWORD || 'password'}@qbreader.0i7oej9.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri);
@@ -14,7 +14,7 @@ client.connect().then(() => {
     const bonuses = database.collection('bonuses');
 
     const PACKET_DIRECTORY = 'packets/';
-    fs.readdirSync(PACKET_DIRECTORY).forEach(async setName => {
+    readdirSync(PACKET_DIRECTORY).forEach(async setName => {
         let packetNumber = 0;
         if (setName.endsWith('.sh') || setName === '.DS_Store') return;
 
@@ -28,13 +28,13 @@ client.connect().then(() => {
 
         console.log(`Uploading ${setName}...`);
 
-        fs.readdirSync(PACKET_DIRECTORY + setName).sort().forEach((packetName) => {
+        readdirSync(PACKET_DIRECTORY + setName).sort().forEach((packetName) => {
             if (!packetName.endsWith('.json')) return;
 
             // console.log(packetName);
             packetNumber++;
             const packet = { _id: new ObjectId(), name: packetName.slice(0, -5), tossups: [], bonuses: [] };
-            const data = JSON.parse(fs.readFileSync(PACKET_DIRECTORY + setName + '/' + packetName));
+            const data = JSON.parse(readFileSync(PACKET_DIRECTORY + setName + '/' + packetName));
 
             if (data.tossups) {
                 data.tossups.forEach((tossup, index) => {

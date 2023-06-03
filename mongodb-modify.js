@@ -1,6 +1,15 @@
-require('dotenv').config();
+import 'dotenv/config';
 
-const { MongoClient, ObjectId } = require('mongodb');
+import { tossupToString, bonusToString } from './stringify.js';
+
+import { readFileSync } from 'fs';
+import { createRequire } from 'module';
+import { MongoClient, ObjectId } from 'mongodb';
+
+const require = createRequire(import.meta.url);
+
+const cats = require('./subcat-to-cat.json');
+const subcats = require('./standardize-subcats.json');
 
 const uri = `mongodb+srv://${process.env.MONGODB_USERNAME || 'geoffreywu42'}:${process.env.MONGODB_PASSWORD || 'password'}@qbreader.0i7oej9.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri);
@@ -17,10 +26,6 @@ const bonuses = questionDatabase.collection('bonuses');
 const accountInfo = client.db('account-info');
 const tossupData = accountInfo.collection('tossup-data');
 const bonusData = accountInfo.collection('bonus-data');
-
-
-const cats = require('./subcat-to-cat.json');
-const { tossupToString, bonusToString } = require('./stringify');
 
 
 function clearReports() {
@@ -512,8 +517,6 @@ async function sanitizeLeadin() {
 
 
 function standardizeSubcategories() {
-    const subcats = require('./standardize-subcats.json');
-
     let counter = 0;
 
     tossups.find(
@@ -597,8 +600,7 @@ async function updateOneSubcategory(_id, type, subcategory, clearReports = true)
  * @param {String} filename the file from which to read in data for the categories
  */
 async function updateManySubcategories(filename='input.txt') {
-    const fs = require('fs');
-    const data = fs.readFileSync(filename, { encoding: 'utf-8' });
+    const data = readFileSync(filename, { encoding: 'utf-8' });
 
     let counter = 0;
 

@@ -1,5 +1,6 @@
 {
   "name": "qbreader-database",
+  "type": "module",
   "dependencies": {
     "dotenv": "^16.0.2",
     "mongodb": "^4.9.0"
