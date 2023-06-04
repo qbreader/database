@@ -16,9 +16,9 @@ client.connect().then(async () => {
     console.log('connected to mongodb');
 
     const database = client.db('geoword');
-    const answers = database.collection('answers');
+    const tossupCollection = database.collection('tossups');
 
-    console.log(await answers.deleteMany({ packetName, difficulty }));
+    console.log(await tossupCollection.deleteMany({ packetName, difficulty }));
 
     const { tossups } = data;
 
@@ -37,5 +37,5 @@ client.connect().then(async () => {
         tossup.questionNumber = tossup.questionNumber || (index + 1);
     }
 
-    console.log(await answers.insertMany(tossups));
+    console.log(await tossupCollection.insertMany(tossups));
 });
