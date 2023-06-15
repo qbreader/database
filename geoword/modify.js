@@ -27,6 +27,13 @@ const divisionChoices = geoword.collection('division-choices');
 const packets = geoword.collection('packets');
 const tossups = geoword.collection('tossups');
 
+async function renamePacket(oldName, newName) {
+    await buzzes.updateMany({ packetName: oldName }, { $set: { packetName: newName } });
+    await divisionChoices.updateMany({ packetName: oldName }, { $set: { packetName: newName } });
+    await packets.updateOne({ name: oldName }, { $set: { name: newName } });
+    await tossups.updateMany({ packetName: oldName }, { $set: { packetName: newName } });
+}
+
 async function updateScoring(minimumCorrectPoints = 10, maximumCorrectPoints = 20) {
     const bulk = buzzes.initializeUnorderedBulkOp();
 
