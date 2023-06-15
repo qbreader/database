@@ -6,11 +6,26 @@ const uri = `mongodb+srv://${process.env.MONGODB_USERNAME || 'geoffreywu42'}:${p
 const client = new MongoClient(uri);
 client.connect().then(async () => {
     console.log('connected to mongodb');
+    // tossups.updateMany({}, { $set: { division: 'High School' }, $unset: { difficulty: '' } });
+    // buzzes.updateMany({}, { $set: { division: 'High School' } });
+    // await buzzes.aggregate([
+    //     { $group: {
+    //         _id: '$user_id',
+    //     } },
+    // ]).forEach(user => {
+    //     divisionChoices.insertOne({
+    //         user_id: user._id,
+    //         division: 'High School',
+    //         packetName: 'beterword-sample',
+    //     });
+    // });
 });
 
-const database = client.db('geoword');
-const answers = database.collection('answers');
-const buzzes = database.collection('buzzes');
+const geoword = client.db('geoword');
+const buzzes = geoword.collection('buzzes');
+const divisionChoices = geoword.collection('division-choices');
+const packets = geoword.collection('packets');
+const tossups = geoword.collection('tossups');
 
 async function updateScoring(minimumCorrectPoints = 10, maximumCorrectPoints = 20) {
     const bulk = buzzes.initializeUnorderedBulkOp();
