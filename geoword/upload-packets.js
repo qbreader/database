@@ -14,9 +14,11 @@ client.connect().then(async () => {
 
     const PACKET_DIRECTORY = 'packets/';
     fs.readdirSync(PACKET_DIRECTORY).forEach(async packetName => {
-        if (packetName.endsWith('.sh') || packetName === '.DS_Store' || !packetName.endsWith('.json')) {
+        if (packetName.endsWith('.sh') || packetName === '.DS_Store') {
             return;
         }
+
+        console.log('Uploading', packetName);
 
         const divisions = [];
 
@@ -31,7 +33,6 @@ client.connect().then(async () => {
             const data = JSON.parse(fs.readFileSync(PACKET_DIRECTORY + packetName + '/' + fileName));
             const { tossups } = data;
 
-            packetName = packetName.slice(0, -5);
             divisions.push(division);
 
             await tossupCollection.deleteMany({ packetName, division: fileName });
@@ -46,7 +47,7 @@ client.connect().then(async () => {
                     tossup.formatted_answer = tossup.formatted_answer.replace(/\t/g, ' ').replace(/ {2,}/g, ' ').trim();
                 }
 
-                tossup.division = tossup.division || fileName;
+                tossup.division = tossup.division || division;
                 tossup.packetName = packetName;
                 tossup.questionNumber = tossup.questionNumber || (index + 1);
             }
@@ -54,6 +55,6 @@ client.connect().then(async () => {
             console.log(await tossupCollection.insertMany(tossups));
         });
 
-        console.log(await packets.insertOne({ name: packetName, divisions }));
+        console.log(await packets.replaceOne({ name: packetName, divisions }, { name: packetName, divisions }, { upsert: true }));
     });
 });
