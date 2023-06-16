@@ -6,7 +6,7 @@ const uri = `mongodb+srv://${process.env.MONGODB_USERNAME || 'geoffreywu42'}:${p
 const client = new MongoClient(uri);
 client.connect().then(async () => {
     console.log('connected to mongodb');
-    // tossups.updateMany({}, { $set: { division: 'High School' }, $unset: { difficulty: '' } });
+    // console.log(await tossups.updateMany({ division: 'Division 1.json' }, { $set: { division: 'Division 1' } }));
     // buzzes.updateMany({}, { $set: { division: 'High School' } });
     // await buzzes.aggregate([
     //     { $group: {
@@ -19,6 +19,7 @@ client.connect().then(async () => {
     //         packetName: 'beterword-sample',
     //     });
     // });
+    client.close();
 });
 
 const geoword = client.db('geoword');
