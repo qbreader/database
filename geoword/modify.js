@@ -1,6 +1,6 @@
 import 'dotenv/config';
 
-import { MongoClient } from 'mongodb';
+import { MongoClient, ObjectId } from 'mongodb';
 
 const uri = `mongodb+srv://${process.env.MONGODB_USERNAME || 'geoffreywu42'}:${process.env.MONGODB_PASSWORD || 'password'}@qbreader.0i7oej9.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri);
@@ -19,6 +19,7 @@ client.connect().then(async () => {
     //         packetName: 'beterword-sample',
     //     });
     // });
+    // console.log(await buzzes.deleteMany({ user_id: new ObjectId('6462a3908039ff856023d8fa') }));
     client.close();
 });
 
