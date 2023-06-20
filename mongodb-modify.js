@@ -26,6 +26,7 @@ const bonuses = questionDatabase.collection('bonuses');
 const accountInfo = client.db('account-info');
 const tossupData = accountInfo.collection('tossup-data');
 const bonusData = accountInfo.collection('bonus-data');
+const users = accountInfo.collection('users');
 
 
 function clearReports() {
@@ -310,6 +311,13 @@ async function fixSpaces() {
     }
 }
 
+
+async function getAdmins() {
+    return await users.find(
+        { admin: true },
+        { projection: { _id: 0, username: 1 }, sort: { username: 1 } }
+    ).toArray();
+}
 
 async function listAlternateSubcategories(update = false) {
     tossups.find({
