@@ -28,7 +28,11 @@ client.connect().then(async () => {
             }
 
             const division = fileName.slice(0, -5);
-            console.assert(['High School', 'Division 1', 'Division 2'].includes(division), 'wrong division');
+
+            if (!['High School', 'Division 1', 'Division 2'].includes(division)) {
+                console.log('wrong division:', division);
+                return;
+            }
 
             const data = JSON.parse(fs.readFileSync(PACKET_DIRECTORY + packetName + '/' + fileName));
             const { tossups } = data;
