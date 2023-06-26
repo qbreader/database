@@ -6,9 +6,11 @@ const uri = `mongodb+srv://${process.env.MONGODB_USERNAME || 'geoffreywu42'}:${p
 const client = new MongoClient(uri);
 client.connect().then(async () => {
     console.log('connected to mongodb');
-    // printMostActiveUsers(10, 'tossup');
-    // printUserStats('');
-    // client.close();
+    // await printMostActiveUsers(10, 'tossup');
+    // await printUserStats('');
+    // console.log(array.map(user => user.count));
+    // console.log(array.map((user) => user.count).reduce((a, b) => a + b));
+    client.close();
 });
 
 const accountInfo = client.db('account-info');
@@ -24,7 +26,7 @@ const users = accountInfo.collection('users');
  * username: String,
  * _id: String,
  * count: Number
- * }>>} - an array of objects
+ * }>>} an array of objects
  */
 async function getMostActiveUsers(limit, type = 'tossup') {
     const aggregation = [
@@ -33,7 +35,7 @@ async function getMostActiveUsers(limit, type = 'tossup') {
             count: { '$sum': 1 }
         } },
         { $sort: {
-            count: -1
+            count: 1
         } },
         { $lookup: {
             from: 'users',
@@ -46,7 +48,7 @@ async function getMostActiveUsers(limit, type = 'tossup') {
             _id: 1,
             count: 1,
         } },
-        { $limit: limit }
+        { $limit: limit },
     ];
 
     switch (type) {
