@@ -38,6 +38,10 @@ async function deletePacket(packetName) {
     await buzzes.deleteMany({ packetName });
 }
 
+async function getPaymentCount(packetName) {
+    return await payments.countDocuments({ packetName });
+}
+
 async function manuallyAddPayment(username, packetName) {
     const user = await users.findOne({ username });
     if (!user) {
