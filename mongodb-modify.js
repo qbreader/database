@@ -461,22 +461,19 @@ async function renamePacket(setName, packetNumber, newPacketName) {
 
 
 async function renameSet(oldName, newName) {
-    const set = await sets.findOneAndUpdate({ name: oldName }, { $set: { name: newName } }).then(result => result.value);
+    const year = parseInt(newName.slice(0, 4));
+    const set = await sets.findOneAndUpdate({ name: oldName }, { $set: { name: newName, year } }).then(result => result.value);
     console.log(set._id);
 
-    tossups.updateMany(
+    console.log(await tossups.updateMany(
         { set: set._id },
-        { $set: { setName: newName, updatedAt: new Date() } }
-    ).then(result => {
-        console.log(result);
-    });
+        { $set: { setName: newName, year, updatedAt: new Date() } }
+    ));
 
-    bonuses.updateMany(
+    console.log(await bonuses.updateMany(
         { set: set._id },
-        { $set: { setName: newName, updatedAt: new Date() } }
-    ).then(result => {
-        console.log(result);
-    });
+        { $set: { setName: newName, year, updatedAt: new Date() } }
+    ));
 }
 
 
