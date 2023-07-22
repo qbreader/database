@@ -32,6 +32,8 @@ client.connect().then(async () => {
                 continue;
             }
 
+            let counter = 0;
+
             for (const filename of fs.readdirSync(PACKET_DIRECTORY + packetName + '/' + division)) {
                 if (!filename.endsWith(EXTENSION)) {
                     continue;
@@ -41,9 +43,10 @@ client.connect().then(async () => {
                 const tossup = await tossups.findOne({ packetName, division, questionNumber });
                 const file = fs.readFileSync(PACKET_DIRECTORY + packetName + '/' + division + '/' + filename);
                 await audio.insertOne({ tossup_id: tossup._id, audio: file });
+                counter++;
             }
 
-            console.log(`Uploaded ${division} of ${packetName}`);
+            console.log(`Uploaded ${division} of ${packetName} (${counter} files)`);
         }
     }
 });
