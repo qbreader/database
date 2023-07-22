@@ -38,6 +38,18 @@ async function deletePacket(packetName) {
     await buzzes.deleteMany({ packetName });
 }
 
+async function findMissingAudio() {
+    return await tossups.aggregate([
+        { $lookup: {
+            from: 'audio',
+            localField: '_id',
+            foreignField: 'tossup_id',
+            as: 'audio'
+        } },
+        { $match: { audio: { $size: 0 } } }
+    ]).toArray();
+}
+
 async function getPaymentCount(packetName) {
     return await payments.countDocuments({ packetName });
 }
