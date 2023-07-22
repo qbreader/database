@@ -59,6 +59,6 @@ client.connect().then(async () => {
             console.log(await tossupCollection.insertMany(tossups));
         });
 
-        console.log(await packets.replaceOne({ name: packetName, divisions }, { name: packetName, divisions }, { upsert: true }));
+        console.log(await packets.replaceOne({ name: packetName, divisions }, { name: packetName, divisions, test: true, active: false }, { upsert: true }));
     });
 });
