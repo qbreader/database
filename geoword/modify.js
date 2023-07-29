@@ -10,6 +10,7 @@ client.connect().then(async () => {
 });
 
 const geoword = client.db('geoword');
+const audio = geoword.collection('audio');
 const buzzes = geoword.collection('buzzes');
 const divisionChoices = geoword.collection('division-choices');
 const packets = geoword.collection('packets');
@@ -18,6 +19,18 @@ const tossups = geoword.collection('tossups');
 
 const accountInfo = client.db('account-info');
 const users = accountInfo.collection('users');
+
+async function copyAudioIds() {
+    let counter = 0;
+    const cursor = audio.find({});
+    let audioDoc;
+    while ((audioDoc = await cursor.next())) {
+        const { tossup_id } = audioDoc;
+        await tossups.updateOne({ _id: tossup_id }, { $set: { audio_id: audioDoc._id } });
+        counter++;
+    }
+    console.log(counter);
+}
 
 async function deleteBuzzes(packetName) {
     await buzzes.deleteMany({ packetName });

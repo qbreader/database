@@ -1,7 +1,7 @@
 import 'dotenv/config';
 
 import * as fs from 'fs';
-import { MongoClient } from 'mongodb';
+import { MongoClient, ObjectId } from 'mongodb';
 
 const PACKET_DIRECTORY = 'packets/';
 const EXTENSION = '.mp3';
@@ -40,9 +40,10 @@ client.connect().then(async () => {
                 }
 
                 const questionNumber = parseInt(filename.slice(0, -EXTENSION.length));
-                const tossup = await tossups.findOne({ packetName, division, questionNumber });
+                const _id = new ObjectId();
                 const file = fs.readFileSync(PACKET_DIRECTORY + packetName + '/' + division + '/' + filename);
-                await audio.insertOne({ tossup_id: tossup._id, audio: file });
+                await audio.insertOne({ _id: _id, audio: file });
+                await tossups.updateOne({ packetName, division, questionNumber }, { $set: { audio_id: _id } });
                 counter++;
             }
 
