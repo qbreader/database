@@ -35,7 +35,7 @@ async function getMostActiveUsers(limit, type = 'tossup') {
             count: { '$sum': 1 }
         } },
         { $sort: {
-            count: 1
+            count: -1
         } },
         { $lookup: {
             from: 'users',
