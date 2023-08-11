@@ -1,13 +1,13 @@
 import 'dotenv/config';
 
-import { readFileSync } from 'fs';
+import * as fs from 'fs';
 import { MongoClient, ObjectId } from 'mongodb';
 
 const setName = '2011 ACF Nationals';
 const packetNumber = 21;
 const packetName = 'UCLAASUIllinoisBCMU';
 
-const data = JSON.parse(readFileSync(`${packetName}.json`));
+const data = JSON.parse(fs.readFileSync(`${packetName}.json`));
 
 const uri = `mongodb+srv://${process.env.MONGODB_USERNAME || 'geoffreywu42'}:${process.env.MONGODB_PASSWORD || 'password'}@qbreader.0i7oej9.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri);
