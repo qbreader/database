@@ -6,6 +6,7 @@ import { MongoClient, ObjectId } from 'mongodb';
 const setName = '2011 ACF Nationals';
 const packetNumber = 21;
 const packetName = 'UCLAASUIllinoisBCMU';
+const shiftPacketNumbers = false;
 
 const data = JSON.parse(fs.readFileSync(`${packetName}.json`));
 
@@ -23,32 +24,36 @@ client.connect().then(async () => {
         return set._id;
     });
 
-    const packetID = await sets.findOne({ name: setName }).then(async set => {
-        if (set.packets.length + 1 == packetNumber) {
-            const id = new ObjectId();
-            await sets.updateOne({ name: setName }, { $push: { packets: { _id: id, name: packetName, tossups: [], bonuses: [] } } });
-            return id;
-        } else if (set.packets.length < packetNumber) {
-            throw new Error('Packet number is too high');
-        }
+    let packetID = new ObjectId();
 
-        return set.packets[packetNumber - 1]._id;
-    });
+    if (!shiftPacketNumbers) {
+        packetID = await sets.findOne({ name: setName }).then(async set => {
+            if (set.packets.length + 1 == packetNumber) {
+                const id = new ObjectId();
+                await sets.updateOne({ name: setName }, { $push: { packets: { _id: id, name: packetName, tossups: [], bonuses: [] } } });
+                return id;
+            } else if (set.packets.length < packetNumber) {
+                throw new Error('Packet number is too high');
+            }
 
-    tossups.deleteMany({ set: setID, packet: packetID }).then(result => {
-        console.log(result);
-    });
+            return set.packets[packetNumber - 1]._id;
+        });
+    }
 
-    bonuses.deleteMany({ set: setID, packet: packetID }).then(result => {
-        console.log(result);
-    });
+    if (shiftPacketNumbers) {
+        console.log(await tossups.updateMany({ set: setID, packetNumber: { $gte: packetNumber } }, { $inc: { packetNumber: 1 } }));
+        console.log(await bonuses.updateMany({ set: setID, packetNumber: { $gte: packetNumber } }, { $inc: { packetNumber: 1 } }));
+    } else {
+        console.log(await tossups.deleteMany({ set: setID, packet: packetID }));
+        console.log(await bonuses.deleteMany({ set: setID, packet: packetID }));
+    }
 
     const packet = {
         tossups: [],
         bonuses: [],
     };
 
-    data.tossups.forEach((tossup, index) => {
+    data.tossups.forEach(async (tossup, index) => {
         tossup.question = tossup.question
             .replace(/\t/g, ' ')
             .replace(/ {2,}/g, ' ')
@@ -76,11 +81,11 @@ client.connect().then(async () => {
         tossup.questionNumber = tossup.questionNumber || (index + 1);
         tossup.createdAt = tossup.createdAt || new Date();
         tossup.updatedAt = tossup.updatedAt || new Date();
-        tossups.insertOne(tossup);
+        await tossups.insertOne(tossup);
         packet.tossups.push(tossup._id);
     });
 
-    data.bonuses.forEach((bonus, index) => {
+    data.bonuses.forEach(async (bonus, index) => {
         for (let i = 0; i < bonus.parts.length; i++) {
             bonus.parts[i] = bonus.parts[i]
                 .replace(/\t/g, ' ')
@@ -112,17 +117,32 @@ client.connect().then(async () => {
         bonus.questionNumber = bonus.questionNumber || (index + 1);
         bonus.createdAt = bonus.createdAt || new Date();
         bonus.updatedAt = bonus.updatedAt || new Date();
-        bonuses.insertOne(bonus);
+        await bonuses.insertOne(bonus);
         packet.bonuses.push(bonus._id);
     });
 
-    sets.updateOne(
-        { _id: setID },
-        { $set: {
-            [`packets.${packetNumber - 1}.tossups`]: packet.tossups,
-            [`packets.${packetNumber - 1}.bonuses`]: packet.bonuses,
-        } }
-    ).then(result => {
-        console.log(result);
-    });
+    if (shiftPacketNumbers) {
+        console.log(await sets.updateOne(
+            { _id: setID },
+            { $push: {
+                packets: {
+                    $each: [{
+                        _id: packetID,
+                        name: packetName,
+                        tossups: packet.tossups,
+                        bonuses: packet.bonuses,
+                    }],
+                    $position: packetNumber - 1,
+                }
+            } },
+        ));
+    } else {
+        console.log(await sets.updateOne(
+            { _id: setID },
+            { $set: {
+                [`packets.${packetNumber - 1}.tossups`]: packet.tossups,
+                [`packets.${packetNumber - 1}.bonuses`]: packet.bonuses,
+            } },
+        ));
+    }
 });
