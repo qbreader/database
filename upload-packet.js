@@ -142,14 +142,20 @@ async function uploadPacket(setName, packetName, packetNumber, shiftPacketNumber
                 updatedAt: new Date(),
                 category: bonus.category,
                 subcategory: bonus.subcategory,
-                values: bonus.values,
-                difficulties: bonus.difficulties,
                 packetName: packetName,
             },
             $unset: {
                 reports: '',
             }
         };
+
+        if (bonus.values) {
+            updateDoc.$set.values = bonus.values;
+        }
+
+        if (bonus.difficulties) {
+            updateDoc.$set.difficulties = bonus.difficulties;
+        }
 
         if (index < bonusCount && packetAlreadyExists) {
             const { _id } = bonuses.findOneAndUpdate({ packet_id: packet_id, questionNumber: index + 1 }, updateDoc);
