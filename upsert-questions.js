@@ -16,9 +16,6 @@ const packets = database.collection('packets');
 const sets = database.collection('sets');
 const tossups = database.collection('tossups');
 
-const tossupBulk = tossups.initializeUnorderedBulkOp();
-const bonusBulk = bonuses.initializeUnorderedBulkOp();
-
 const accountInfo = client.db('account-info');
 
 const tossupData = accountInfo.collection('tossup-data');
@@ -35,6 +32,9 @@ const bonusData = accountInfo.collection('bonus-data');
  * @param {boolean} params.shiftPacketNumbers - whether to shift the packet numbers of existing packets. Defaults to `false`.
  */
 async function upsertPacket({ setName, packetName, packetNumber, folderPath = './', shiftPacketNumbers = false }) {
+    const tossupBulk = tossups.initializeUnorderedBulkOp();
+    const bonusBulk = bonuses.initializeUnorderedBulkOp();
+
     const data = JSON.parse(fs.readFileSync(`${folderPath}/${packetName}.json`));
     let packetAlreadyExists = false;
 
@@ -188,6 +188,40 @@ async function upsertPacket({ setName, packetName, packetNumber, folderPath = '.
     console.log('done');
 }
 
-export { upsertPacket };
+
+/**
+ *
+ * @param {string} setName
+ * @param {string} folderPath - the folder that the set is in. Defaults to the current directory.
+ * @returns {Promise<boolean>} whether the set existed before updating
+ */
+async function upsertSet(setName, folderPath = './') {
+    let setAlreadyExists = await sets.countDocuments({ name: setName });
+    setAlreadyExists = !!setAlreadyExists;
+
+    if (!setAlreadyExists) {
+        console.log(`Set ${setName} does not exist`);
+        setAlreadyExists = false;
+        await sets.insertOne({ _id: new ObjectId(), name: setName, year: parseInt(setName.slice(0, 4)) });
+    }
+
+    let packetNumber = 0;
+
+    for (const fileName of fs.readdirSync(`${folderPath}/${setName}`).sort()) {
+        if (!fileName.endsWith('.json')) {
+            return;
+        }
+
+        const packetName = fileName.slice(0, -5);
+        packetNumber++;
+
+        await upsertPacket({ setName: setName, packetName: packetName, packetNumber: packetNumber, folderPath: `${folderPath}/${setName}` });
+        console.log(`Uploaded ${setName} Packet ${packetName}`);
+    }
+
+    return setAlreadyExists;
+}
+
+export { upsertPacket, upsertSet };
 
 // await uploadPacket({ setName: '', packetName: '', packetNumber: 1, shiftPacketNumbers: true });
