@@ -169,8 +169,13 @@ async function uploadPacket(setName, packetName, packetNumber, shiftPacketNumber
         }
     });
 
-    console.log(await tossupBulk.execute());
-    console.log(await bonusBulk.execute());
+    if (tossupBulk.length > 0) {
+        console.log(await tossupBulk.execute());
+    }
+
+    if (bonusBulk.length > 0) {
+        console.log(await bonusBulk.execute());
+    }
 }
 
 export default uploadPacket;
