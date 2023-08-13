@@ -16,6 +16,14 @@ const packets = database.collection('packets');
 const sets = database.collection('sets');
 const tossups = database.collection('tossups');
 
+/**
+ * Upload a packet without deleting existing _id references.
+ * Creates new packets _as needed_.
+ * @param {string} setName
+ * @param {string} packetName
+ * @param {number} packetNumber
+ * @param {boolean} shiftPacketNumbers
+ */
 async function uploadPacket(setName, packetName, packetNumber, shiftPacketNumbers = true) {
     const data = JSON.parse(fs.readFileSync(`${packetName}.json`));
 
