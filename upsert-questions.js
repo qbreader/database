@@ -34,7 +34,7 @@ const bonusData = accountInfo.collection('bonus-data');
  * @param {string} params.folderpath - the folder that the packet is in. Defaults to the current directory.
  * @param {boolean} params.shiftPacketNumbers - whether to shift the packet numbers of existing packets. Defaults to `true`.
  */
-async function uploadPacket({ setName, packetName, packetNumber, folderpath = './', shiftPacketNumbers = true }) {
+async function upsertPacket({ setName, packetName, packetNumber, folderpath = './', shiftPacketNumbers = true }) {
     const data = JSON.parse(fs.readFileSync(`${folderpath}/${packetName}.json`));
     let packetAlreadyExists = false;
 
@@ -188,6 +188,6 @@ async function uploadPacket({ setName, packetName, packetNumber, folderpath = '.
     console.log('done');
 }
 
-export default uploadPacket;
+export { upsertPacket };
 
 // await uploadPacket({ setName: '', packetName: '', packetNumber: 1, shiftPacketNumbers: true });
