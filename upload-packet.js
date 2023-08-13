@@ -3,31 +3,29 @@ import 'dotenv/config';
 import * as fs from 'fs';
 import { MongoClient, ObjectId } from 'mongodb';
 
-const setName = '2011 ACF Nationals';
-const packetNumber = 21;
-const packetName = 'UCLAASUIllinoisBCMU';
-const shiftPacketNumbers = false;
-
-const data = JSON.parse(fs.readFileSync(`${packetName}.json`));
-
 const uri = `mongodb+srv://${process.env.MONGODB_USERNAME || 'geoffreywu42'}:${process.env.MONGODB_PASSWORD || 'password'}@qbreader.0i7oej9.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri);
-client.connect().then(async () => {
-    console.log('connected to mongodb');
+await client.connect();
 
-    const database = client.db('qbreader');
-    const sets = database.collection('sets');
-    const tossups = database.collection('tossups');
-    const bonuses = database.collection('bonuses');
+console.log('connected to mongodb');
 
-    const setID = await sets.findOne({ name: setName }).then(set => {
+const database = client.db('qbreader');
+
+const bonuses = database.collection('bonuses');
+const sets = database.collection('sets');
+const tossups = database.collection('tossups');
+
+async function uploadPacket(setName, packetName, packetNumber, shiftPacketNumbers = false) {
+    const data = JSON.parse(fs.readFileSync(`${packetName}.json`));
+
+    const set_id = await sets.findOne({ name: setName }).then(set => {
         return set._id;
     });
 
-    let packetID = new ObjectId();
+    let packet_id = new ObjectId();
 
     if (!shiftPacketNumbers) {
-        packetID = await sets.findOne({ name: setName }).then(async set => {
+        packet_id = await sets.findOne({ name: setName }).then(async set => {
             if (set.packets.length + 1 == packetNumber) {
                 const id = new ObjectId();
                 await sets.updateOne({ name: setName }, { $push: { packets: { _id: id, name: packetName, tossups: [], bonuses: [] } } });
@@ -41,11 +39,11 @@ client.connect().then(async () => {
     }
 
     if (shiftPacketNumbers) {
-        console.log(await tossups.updateMany({ set: setID, packetNumber: { $gte: packetNumber } }, { $inc: { packetNumber: 1 } }));
-        console.log(await bonuses.updateMany({ set: setID, packetNumber: { $gte: packetNumber } }, { $inc: { packetNumber: 1 } }));
+        console.log(await tossups.updateMany({ set: set_id, packetNumber: { $gte: packetNumber } }, { $inc: { packetNumber: 1 } }));
+        console.log(await bonuses.updateMany({ set: set_id, packetNumber: { $gte: packetNumber } }, { $inc: { packetNumber: 1 } }));
     } else {
-        console.log(await tossups.deleteMany({ set: setID, packet: packetID }));
-        console.log(await bonuses.deleteMany({ set: setID, packet: packetID }));
+        console.log(await tossups.deleteMany({ set: set_id, packet: packet_id }));
+        console.log(await bonuses.deleteMany({ set: set_id, packet: packet_id }));
     }
 
     const packet = {
@@ -72,8 +70,8 @@ client.connect().then(async () => {
         }
 
         tossup._id = new ObjectId();
-        tossup.packet = packetID;
-        tossup.set = setID;
+        tossup.packet = packet_id;
+        tossup.set = set_id;
         tossup.setName = setName;
         tossup.type = 'tossup';
         tossup.packetNumber = packetNumber;
@@ -108,8 +106,8 @@ client.connect().then(async () => {
         }
 
         bonus._id = new ObjectId();
-        bonus.packet = packetID;
-        bonus.set = setID;
+        bonus.packet = packet_id;
+        bonus.set = set_id;
         bonus.setName = setName;
         bonus.type = 'bonus';
         bonus.packetNumber = packetNumber;
@@ -123,11 +121,11 @@ client.connect().then(async () => {
 
     if (shiftPacketNumbers) {
         console.log(await sets.updateOne(
-            { _id: setID },
+            { _id: set_id },
             { $push: {
                 packets: {
                     $each: [{
-                        _id: packetID,
+                        _id: packet_id,
                         name: packetName,
                         tossups: packet.tossups,
                         bonuses: packet.bonuses,
@@ -138,11 +136,13 @@ client.connect().then(async () => {
         ));
     } else {
         console.log(await sets.updateOne(
-            { _id: setID },
+            { _id: set_id },
             { $set: {
                 [`packets.${packetNumber - 1}.tossups`]: packet.tossups,
                 [`packets.${packetNumber - 1}.bonuses`]: packet.bonuses,
             } },
         ));
     }
-});
+}
+
+export default uploadPacket;
