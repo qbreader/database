@@ -29,6 +29,8 @@ const tossupData = accountInfo.collection('tossup-data');
 const bonusData = accountInfo.collection('bonus-data');
 const users = accountInfo.collection('users');
 
+const geoword = client.db('geoword');
+const audio = geoword.collection('audio');
 
 function clearReports() {
     tossups.updateMany(
