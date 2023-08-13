@@ -19,6 +19,11 @@ const tossups = database.collection('tossups');
 const tossupBulk = tossups.initializeUnorderedBulkOp();
 const bonusBulk = bonuses.initializeUnorderedBulkOp();
 
+const accountInfo = client.db('account-info');
+
+const tossupData = accountInfo.collection('tossup-data');
+const bonusData = accountInfo.collection('bonus-data');
+
 /**
  * Upload a packet without deleting existing `_id` references.
  * Creates new packets _as needed_.
@@ -87,7 +92,8 @@ async function uploadPacket(setName, packetName, packetNumber, shiftPacketNumber
         };
 
         if (index < tossupCount && packetAlreadyExists) {
-            tossupBulk.find({ packet_id: packet_id, questionNumber: index + 1 }).updateOne(updateDoc);
+            const { _id } = tossups.findOneAndUpdate({ packet_id: packet_id, questionNumber: index + 1 }, updateDoc);
+            await tossupData.updateMany({ tossup_id: _id }, { $set: { category: tossup.category, subcategory: tossup.subcategory } });
         } else {
             tossupBulk.insert({
                 packet_id: packet_id,
@@ -146,7 +152,8 @@ async function uploadPacket(setName, packetName, packetNumber, shiftPacketNumber
         };
 
         if (index < bonusCount && packetAlreadyExists) {
-            bonusBulk.find({ packet_id: packet_id, questionNumber: index + 1 }).updateOne(updateDoc);
+            const { _id } = bonuses.findOneAndUpdate({ packet_id: packet_id, questionNumber: index + 1 }, updateDoc);
+            await bonusData.updateMany({ bonus_id: _id }, { $set: { category: bonus.category, subcategory: bonus.subcategory } });
         } else {
             bonusBulk.insert({
                 packet_id: packet_id,
