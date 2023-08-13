@@ -92,7 +92,7 @@ async function uploadPacket(setName, packetName, packetNumber, shiftPacketNumber
         };
 
         if (index < tossupCount && packetAlreadyExists) {
-            const { _id } = tossups.findOneAndUpdate({ packet_id: packet_id, questionNumber: index + 1 }, updateDoc);
+            const { _id } = await tossups.findOneAndUpdate({ packet_id: packet_id, questionNumber: index + 1 }, updateDoc);
             await tossupData.updateMany({ tossup_id: _id }, { $set: { category: tossup.category, subcategory: tossup.subcategory } });
         } else {
             tossupBulk.insert({
@@ -158,7 +158,7 @@ async function uploadPacket(setName, packetName, packetNumber, shiftPacketNumber
         }
 
         if (index < bonusCount && packetAlreadyExists) {
-            const { _id } = bonuses.findOneAndUpdate({ packet_id: packet_id, questionNumber: index + 1 }, updateDoc);
+            const { _id } = await bonuses.findOneAndUpdate({ packet_id: packet_id, questionNumber: index + 1 }, updateDoc);
             await bonusData.updateMany({ bonus_id: _id }, { $set: { category: bonus.category, subcategory: bonus.subcategory } });
         } else {
             bonusBulk.insert({
@@ -182,6 +182,8 @@ async function uploadPacket(setName, packetName, packetNumber, shiftPacketNumber
     if (bonusBulk.length > 0) {
         console.log(await bonusBulk.execute());
     }
+
+    console.log('done');
 }
 
 export default uploadPacket;
