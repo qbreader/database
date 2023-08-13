@@ -158,7 +158,7 @@ async function uploadPacket(setName, packetName, packetNumber, shiftPacketNumber
             bonusBulk.insert({
                 packet_id: packet_id,
                 questionNumber: index + 1,
-                set: set._id,
+                set_id: set._id,
                 type: 'bonus',
                 createdAt: new Date(),
                 packetNumber: packetNumber,
