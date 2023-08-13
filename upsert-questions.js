@@ -31,11 +31,11 @@ const bonusData = accountInfo.collection('bonus-data');
  * @param {string} params.setName
  * @param {string} params.packetName
  * @param {number} params.packetNumber
- * @param {string} params.folderpath - the folder that the packet is in. Defaults to the current directory.
- * @param {boolean} params.shiftPacketNumbers - whether to shift the packet numbers of existing packets. Defaults to `true`.
+ * @param {string} params.folderPath - the folder that the packet is in. Defaults to the current directory.
+ * @param {boolean} params.shiftPacketNumbers - whether to shift the packet numbers of existing packets. Defaults to `false`.
  */
-async function upsertPacket({ setName, packetName, packetNumber, folderpath = './', shiftPacketNumbers = true }) {
-    const data = JSON.parse(fs.readFileSync(`${folderpath}/${packetName}.json`));
+async function upsertPacket({ setName, packetName, packetNumber, folderPath = './', shiftPacketNumbers = false }) {
+    const data = JSON.parse(fs.readFileSync(`${folderPath}/${packetName}.json`));
     let packetAlreadyExists = false;
 
     const set = await sets.findOne({ name: setName });
