@@ -106,6 +106,7 @@ async function upsertPacket({ setName, packetName, packetNumber, folderPath = '.
                 packetNumber: packetNumber,
                 setName: setName,
                 setYear: set.year,
+                difficulty: set.difficulty,
                 ...updateDoc.$set,
             });
         }
@@ -172,6 +173,7 @@ async function upsertPacket({ setName, packetName, packetNumber, folderPath = '.
                 packetNumber: packetNumber,
                 setName: setName,
                 setYear: set.year,
+                difficulty: set.difficulty,
                 ...updateDoc.$set,
             });
         }
@@ -224,4 +226,5 @@ async function upsertSet(setName, folderPath = './') {
 
 export { upsertPacket, upsertSet };
 
-// await uploadPacket({ setName: '', packetName: '', packetNumber: 1, shiftPacketNumbers: true });
+// await upsertPacket({ setName: '', packetName: '', packetNumber: 1, shiftPacketNumbers: true });
+// console.log(await upsertSet(''));
