@@ -22,6 +22,7 @@ const questionDatabase = client.db('qbreader');
 const sets = questionDatabase.collection('sets');
 const tossups = questionDatabase.collection('tossups');
 const bonuses = questionDatabase.collection('bonuses');
+const packets = questionDatabase.collection('packets');
 
 const accountInfo = client.db('account-info');
 const tossupData = accountInfo.collection('tossup-data');
@@ -624,6 +625,12 @@ async function updateManySubcategories(filename='input.txt') {
     }
 }
 
+
+async function updatePacketNumber(packet_id, packetNumber) {
+    const packet = await packets.findOneAndUpdate({ _id: packet_id }, { $set: { number: packetNumber } });
+    console.log(await tossups.updateMany({ packet_id: packet._id }, { $set: { packetNumber: packetNumber, packetName: packet.name } }));
+    console.log(await bonuses.updateMany({ packet_id: packet._id }, { $set: { packetNumber: packetNumber, packetName: packet.name } }));
+}
 
 async function updateSetDifficulty(setName, difficulty) {
     const result = await sets.findOneAndUpdate({ name: setName }, { $set: { difficulty: difficulty } });
