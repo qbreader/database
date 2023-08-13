@@ -12,10 +12,11 @@ console.log('connected to mongodb');
 const database = client.db('qbreader');
 
 const bonuses = database.collection('bonuses');
+const packets = database.collection('packets');
 const sets = database.collection('sets');
 const tossups = database.collection('tossups');
 
-async function uploadPacket(setName, packetName, packetNumber, shiftPacketNumbers = false) {
+async function uploadPacket(setName, packetName, packetNumber, shiftPacketNumbers = true) {
     const data = JSON.parse(fs.readFileSync(`${packetName}.json`));
 
     const set_id = await sets.findOne({ name: setName }).then(set => {
@@ -25,31 +26,20 @@ async function uploadPacket(setName, packetName, packetNumber, shiftPacketNumber
     let packet_id = new ObjectId();
 
     if (!shiftPacketNumbers) {
-        packet_id = await sets.findOne({ name: setName }).then(async set => {
-            if (set.packets.length + 1 == packetNumber) {
-                const id = new ObjectId();
-                await sets.updateOne({ name: setName }, { $push: { packets: { _id: id, name: packetName, tossups: [], bonuses: [] } } });
-                return id;
-            } else if (set.packets.length < packetNumber) {
-                throw new Error('Packet number is too high');
-            }
-
-            return set.packets[packetNumber - 1]._id;
-        });
+        packet_id = await packets.findOne({ name: setName, number: packetNumber }).then(packet => packet._id);
     }
 
     if (shiftPacketNumbers) {
-        console.log(await tossups.updateMany({ set: set_id, packetNumber: { $gte: packetNumber } }, { $inc: { packetNumber: 1 } }));
-        console.log(await bonuses.updateMany({ set: set_id, packetNumber: { $gte: packetNumber } }, { $inc: { packetNumber: 1 } }));
+        console.log(await tossups.updateMany({ set_id: set_id, packetNumber: { $gte: packetNumber } }, { $inc: { packetNumber: 1 } }));
+        console.log(await bonuses.updateMany({ set_id: set_id, packetNumber: { $gte: packetNumber } }, { $inc: { packetNumber: 1 } }));
+        console.log(await packets.updateMany({ 'set._id': set_id, number: { $gte: packetNumber } }, { $inc: { number: 1 } }));
     } else {
-        console.log(await tossups.deleteMany({ set: set_id, packet: packet_id }));
-        console.log(await bonuses.deleteMany({ set: set_id, packet: packet_id }));
+        console.log(await tossups.deleteMany({ set_id: set_id, packet_id: packet_id }));
+        console.log(await bonuses.deleteMany({ set_id: set_id, packet_id: packet_id }));
+        console.log(await packets.deleteOne({ _id: packet_id }));
     }
 
-    const packet = {
-        tossups: [],
-        bonuses: [],
-    };
+    await packets.insertOne({ _id: packet_id, name: packetName, number: packetNumber, set: { _id: set_id, name: setName } });
 
     data.tossups.forEach(async (tossup, index) => {
         tossup.question = tossup.question
@@ -70,8 +60,8 @@ async function uploadPacket(setName, packetName, packetNumber, shiftPacketNumber
         }
 
         tossup._id = new ObjectId();
-        tossup.packet = packet_id;
-        tossup.set = set_id;
+        tossup.packet_id = packet_id;
+        tossup.set_id = set_id;
         tossup.setName = setName;
         tossup.type = 'tossup';
         tossup.packetNumber = packetNumber;
@@ -80,7 +70,6 @@ async function uploadPacket(setName, packetName, packetNumber, shiftPacketNumber
         tossup.createdAt = tossup.createdAt || new Date();
         tossup.updatedAt = tossup.updatedAt || new Date();
         await tossups.insertOne(tossup);
-        packet.tossups.push(tossup._id);
     });
 
     data.bonuses.forEach(async (bonus, index) => {
@@ -106,8 +95,8 @@ async function uploadPacket(setName, packetName, packetNumber, shiftPacketNumber
         }
 
         bonus._id = new ObjectId();
-        bonus.packet = packet_id;
-        bonus.set = set_id;
+        bonus.packet_id = packet_id;
+        bonus.set_id = set_id;
         bonus.setName = setName;
         bonus.type = 'bonus';
         bonus.packetNumber = packetNumber;
@@ -116,33 +105,7 @@ async function uploadPacket(setName, packetName, packetNumber, shiftPacketNumber
         bonus.createdAt = bonus.createdAt || new Date();
         bonus.updatedAt = bonus.updatedAt || new Date();
         await bonuses.insertOne(bonus);
-        packet.bonuses.push(bonus._id);
     });
-
-    if (shiftPacketNumbers) {
-        console.log(await sets.updateOne(
-            { _id: set_id },
-            { $push: {
-                packets: {
-                    $each: [{
-                        _id: packet_id,
-                        name: packetName,
-                        tossups: packet.tossups,
-                        bonuses: packet.bonuses,
-                    }],
-                    $position: packetNumber - 1,
-                }
-            } },
-        ));
-    } else {
-        console.log(await sets.updateOne(
-            { _id: set_id },
-            { $set: {
-                [`packets.${packetNumber - 1}.tossups`]: packet.tossups,
-                [`packets.${packetNumber - 1}.bonuses`]: packet.bonuses,
-            } },
-        ));
-    }
 }
 
 export default uploadPacket;
