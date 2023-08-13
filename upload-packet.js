@@ -27,13 +27,15 @@ const bonusData = accountInfo.collection('bonus-data');
 /**
  * Upload a packet without deleting existing `_id` references.
  * Creates new packets _as needed_.
- * @param {string} setName
- * @param {string} packetName
- * @param {number} packetNumber
- * @param {boolean} shiftPacketNumbers
+ * @param {object} params
+ * @param {string} params.setName
+ * @param {string} params.packetName
+ * @param {number} params.packetNumber
+ * @param {string} params.folderpath - the folder that the packet is in. Defaults to the current directory.
+ * @param {boolean} params.shiftPacketNumbers - whether to shift the packet numbers of existing packets. Defaults to `true`.
  */
-async function uploadPacket(setName, packetName, packetNumber, shiftPacketNumbers = true) {
-    const data = JSON.parse(fs.readFileSync(`${packetName}.json`));
+async function uploadPacket({ setName, packetName, packetNumber, folderpath = './', shiftPacketNumbers = true }) {
+    const data = JSON.parse(fs.readFileSync(`${folderpath}/${packetName}.json`));
     let packetAlreadyExists = false;
 
     const set = await sets.findOne({ name: setName });
@@ -187,3 +189,5 @@ async function uploadPacket(setName, packetName, packetNumber, shiftPacketNumber
 }
 
 export default uploadPacket;
+
+// await uploadPacket({ setName: '', packetName: '', packetNumber: 1, shiftPacketNumbers: true });
