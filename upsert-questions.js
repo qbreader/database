@@ -93,6 +93,10 @@ async function upsertPacket({ setName, packetName, packetNumber, folderPath = '.
             }
         };
 
+        if (tossup.alternate_subcategory) {
+            updateDoc.$set.alternate_subcategory = tossup.alternate_subcategory;
+        }
+
         if (index < tossupCount && packetAlreadyExists) {
             const { _id } = await tossups.findOneAndUpdate({ packet_id: packet_id, questionNumber: index + 1 }, updateDoc);
             await tossupData.updateMany({ tossup_id: _id }, { $set: { category: tossup.category, subcategory: tossup.subcategory } });
@@ -152,6 +156,10 @@ async function upsertPacket({ setName, packetName, packetNumber, folderPath = '.
             }
         };
 
+        if (bonus.alternate_subcategory) {
+            updateDoc.$set.alternate_subcategory = bonus.alternate_subcategory;
+        }
+
         if (bonus.values) {
             updateDoc.$set.values = bonus.values;
         }
@@ -180,11 +188,13 @@ async function upsertPacket({ setName, packetName, packetNumber, folderPath = '.
     });
 
     if (tossupBulk.length > 0) {
-        console.log(await tossupBulk.execute());
+        console.log(`tossupBulk: ${tossupBulk.length}`);
+        await tossupBulk.execute();
     }
 
     if (bonusBulk.length > 0) {
-        console.log(await bonusBulk.execute());
+        console.log(`bonusBulk: ${bonusBulk.length}`);
+        await bonusBulk.execute();
     }
 
     console.log('done');
@@ -194,17 +204,18 @@ async function upsertPacket({ setName, packetName, packetNumber, folderPath = '.
 /**
  *
  * @param {string} setName
+ * @param {number} difficulty
  * @param {string} folderPath - the folder that the set is in. Defaults to the current directory.
  * @returns {Promise<boolean>} whether the set existed before updating
  */
-async function upsertSet(setName, folderPath = './') {
+async function upsertSet(setName, difficulty = 0, folderPath = './') {
     let setAlreadyExists = await sets.countDocuments({ name: setName });
     setAlreadyExists = !!setAlreadyExists;
 
     if (!setAlreadyExists) {
         console.log(`Set ${setName} does not exist`);
         setAlreadyExists = false;
-        await sets.insertOne({ _id: new ObjectId(), name: setName, year: parseInt(setName.slice(0, 4)) });
+        await sets.insertOne({ _id: new ObjectId(), name: setName, year: parseInt(setName.slice(0, 4)), difficulty: difficulty });
     }
 
     let packetNumber = 0;
