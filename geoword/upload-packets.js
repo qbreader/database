@@ -1,7 +1,7 @@
 import 'dotenv/config';
 
 import * as fs from 'fs';
-import { MongoClient } from 'mongodb';
+import { MongoClient, ObjectId } from 'mongodb';
 
 const uri = `mongodb+srv://${process.env.MONGODB_USERNAME || 'geoffreywu42'}:${process.env.MONGODB_PASSWORD || 'password'}@qbreader.0i7oej9.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri);
@@ -21,6 +21,7 @@ client.connect().then(async () => {
         console.log('Uploading', packetName);
 
         const divisions = [];
+        const packet_id = new ObjectId();
 
         fs.readdirSync(PACKET_DIRECTORY + packetName).forEach(async fileName => {
             if (!fileName.endsWith('.json')) {
@@ -53,12 +54,13 @@ client.connect().then(async () => {
 
                 tossup.division = tossup.division || division;
                 tossup.packetName = packetName;
+                tossup.packet_id = packet_id;
                 tossup.questionNumber = tossup.questionNumber || (index + 1);
             }
 
             console.log(await tossupCollection.insertMany(tossups));
         });
 
-        console.log(await packets.replaceOne({ name: packetName, divisions }, { name: packetName, divisions, test: true, active: false }, { upsert: true }));
+        console.log(await packets.replaceOne({ name: packetName, divisions }, { _id: packet_id, name: packetName, divisions, test: true, active: false }, { upsert: true }));
     });
 });
