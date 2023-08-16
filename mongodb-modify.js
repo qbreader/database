@@ -31,6 +31,11 @@ const users = accountInfo.collection('users');
 
 const geoword = client.db('geoword');
 const audio = geoword.collection('audio');
+const buzzes = geoword.collection('buzzes');
+const divisionChoices = geoword.collection('division-choices');
+const payments = geoword.collection('payments');
+const geowordTossups = geoword.collection('tossups');
+const geowordPackets = geoword.collection('packets');
 
 function clearReports() {
     tossups.updateMany(
