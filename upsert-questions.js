@@ -111,6 +111,16 @@ async function upsertPacket({ setName, packetName, packetNumber, folderPath = '.
                 setName: setName,
                 setYear: set.year,
                 difficulty: set.difficulty,
+                packet: {
+                    _id: packet_id,
+                    name: packetName,
+                    number: packetNumber,
+                },
+                set: {
+                    _id: set._id,
+                    name: setName,
+                    year: set.year,
+                },
                 ...updateDoc.$set,
             });
         }
@@ -182,6 +192,16 @@ async function upsertPacket({ setName, packetName, packetNumber, folderPath = '.
                 setName: setName,
                 setYear: set.year,
                 difficulty: set.difficulty,
+                packet: {
+                    _id: packet_id,
+                    name: packetName,
+                    number: packetNumber,
+                },
+                set: {
+                    _id: set._id,
+                    name: setName,
+                    year: set.year,
+                },
                 ...updateDoc.$set,
             });
         }
