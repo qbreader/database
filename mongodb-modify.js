@@ -58,8 +58,8 @@ async function deleteSet(setName) {
     const result = await sets.findOneAndDelete({ name: setName });
     const { _id } = result.value;
 
-    console.log(await tossups.deleteMany({ set: _id }));
-    console.log(await bonuses.deleteMany({ set: _id }));
+    console.log(await tossups.deleteMany({ 'set._id': _id }));
+    console.log(await bonuses.deleteMany({ 'set._id': _id }));
     console.log(await tossupData.deleteMany({ set_id: _id }));
     console.log(await bonusData.deleteMany({ set_id: _id }));
 }
@@ -74,11 +74,11 @@ function denormalizeSetNames() {
         }
 
         tossups.updateMany(
-            { set: set._id },
+            { 'set._id': set._id },
             { $set: { setName: set.name, updatedAt: new Date() } }
         );
         bonuses.updateMany(
-            { set: set._id },
+            { 'set._id': set._id },
             { $set: { setName: set.name, updatedAt: new Date() } }
         );
     });
@@ -95,11 +95,11 @@ function denormalizePacketNames() {
 
         for (const packet of set.packets) {
             tossups.updateMany(
-                { packet: packet._id },
+                { 'packet._id': packet._id },
                 { $set: { packetName: packet.name, updatedAt: new Date() } }
             );
             bonuses.updateMany(
-                { packet: packet._id },
+                { 'packet._id': packet._id },
                 { $set: { packetName: packet.name, updatedAt: new Date() } }
             );
         }
@@ -115,12 +115,12 @@ function denormalizeSetYears() {
         sets.updateOne({ _id: set._id }, { $set: { year: setYear } });
 
         tossups.updateMany(
-            { set: set._id },
+            { 'set._id': set._id },
             { $set: { setYear: setYear, updatedAt: new Date() } }
         );
 
         bonuses.updateMany(
-            { set: set._id },
+            { 'set._id': set._id },
             { $set: { setYear: setYear, updatedAt: new Date() } }
         );
 
@@ -388,14 +388,14 @@ function listQuestionsWithoutSubcategory() {
 function listSetsWithAnswerFormatting() {
     tossups.aggregate([
         { $match: { formatted_answer: { $exists: true } } },
-        { $group: { _id: '$setName' } }
+        { $group: { _id: '$set.name' } }
     ]).forEach(set => {
         console.log(set._id);
     });
 
     bonuses.aggregate([
         { $match: { formatted_answers: { $exists: true } } },
-        { $group: { _id: '$setName' } }
+        { $group: { _id: '$set.name' } }
     ]).forEach(set => {
         console.log(set._id);
     });
@@ -405,14 +405,14 @@ function listSetsWithAnswerFormatting() {
 function listSetsWithoutField(field) {
     tossups.aggregate([
         { $match: { [field]: { $exists: false } } },
-        { $group: { _id: '$setName' } }
+        { $group: { _id: '$set.name' } }
     ]).forEach(set => {
         console.log(set._id);
     });
 
     bonuses.aggregate([
         { $match: { [field]: { $exists: false } } },
-        { $group: { _id: '$setName' } }
+        { $group: { _id: '$set.name' } }
     ]).forEach(set => {
         console.log(set._id);
     });
@@ -450,37 +450,35 @@ async function printMostReadTossups(limit = 1) {
 
 
 async function renamePacket(setName, packetNumber, newPacketName) {
-    const set = await sets.findOne({ name: setName });
-    const packet = set.packets[packetNumber - 1];
-    await sets.updateOne(
-        { _id: set._id },
-        { $set: { [`packets.${packetNumber - 1}.name`]: newPacketName } }
-    );
+    const packet = await packets.findOne({ 'set.name': setName, number: packetNumber });
 
     console.log(await tossups.updateMany(
-        { packet: packet._id },
-        { $set: { packetName: newPacketName, updatedAt: new Date() } }
+        { 'packet._id': packet._id },
+        { $set: { 'packet.name': newPacketName, updatedAt: new Date() } }
     ));
+
     console.log(await bonuses.updateMany(
-        { packet: packet._id },
-        { $set: { packetName: newPacketName, updatedAt: new Date() } }
+        { 'packet._id': packet._id },
+        { $set: { 'packet.name': newPacketName, updatedAt: new Date() } }
     ));
 }
 
 
 async function renameSet(oldName, newName) {
     const year = parseInt(newName.slice(0, 4));
-    const set = await sets.findOneAndUpdate({ name: oldName }, { $set: { name: newName, year } }).then(result => result.value);
-    console.log(set._id);
+    const set = await sets.findOneAndUpdate(
+        { name: oldName },
+        { $set: { name: newName, year } },
+    ).then(result => result.value);
 
     console.log(await tossups.updateMany(
-        { set: set._id },
-        { $set: { setName: newName, year, updatedAt: new Date() } }
+        { 'set._id': set._id },
+        { $set: { 'set.name': newName, 'set.year': year, updatedAt: new Date() } }
     ));
 
     console.log(await bonuses.updateMany(
-        { set: set._id },
-        { $set: { setName: newName, year, updatedAt: new Date() } }
+        { 'set._id': set._id },
+        { $set: { 'set.name': newName, 'set.year': year, updatedAt: new Date() } }
     ));
 }
 
@@ -506,6 +504,8 @@ async function removeTrailingBonusesString() {
         }
     });
 }
+
+
 async function sanitizeLeadin() {
     const regExp = /(?<=each:) {2}.*/i;
     const count = await bonuses.countDocuments({ leadin: { $regex: regExp } });
@@ -634,13 +634,28 @@ async function updateManySubcategories(filename='input.txt') {
 
 
 async function updatePacketNumber(packet_id, packetNumber) {
-    const packet = await packets.findOneAndUpdate({ _id: packet_id }, { $set: { number: packetNumber } });
-    console.log(await tossups.updateMany({ packet_id: packet._id }, { $set: { packetNumber: packetNumber, packetName: packet.name } }));
-    console.log(await bonuses.updateMany({ packet_id: packet._id }, { $set: { packetNumber: packetNumber, packetName: packet.name } }));
+    const packet = await packets.findOneAndUpdate(
+        { _id: packet_id },
+        { $set: { number: packetNumber } },
+    );
+
+    console.log(await tossups.updateMany(
+        { 'packet._id': packet._id },
+        { $set: { 'packet.name': packet.name, 'packet.number': packetNumber } },
+    ));
+
+    console.log(await bonuses.updateMany(
+        { 'packet._id': packet._id },
+        { $set: { 'packet.name': packet.name, 'packet.number': packetNumber } },
+    ));
 }
 
+
 async function updateSetDifficulty(setName, difficulty) {
-    const result = await sets.findOneAndUpdate({ name: setName }, { $set: { difficulty: difficulty } });
+    const result = await sets.findOneAndUpdate(
+        { name: setName },
+        { $set: { difficulty: difficulty } },
+    );
     const { _id } = result.value;
 
     await tossupData.updateMany(
@@ -654,12 +669,12 @@ async function updateSetDifficulty(setName, difficulty) {
     );
 
     console.log(await tossups.updateMany(
-        { set: _id },
+        { 'set._id': _id },
         { $set: { difficulty: difficulty, updatedAt: new Date() } }
     ));
 
     console.log(await bonuses.updateMany(
-        { set: _id },
+        { 'set._id': _id },
         { $set: { difficulty: difficulty, updatedAt: new Date() } },
     ));
 }
