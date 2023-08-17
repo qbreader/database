@@ -65,73 +65,6 @@ async function deleteSet(setName) {
 }
 
 
-function denormalizeSetNames() {
-    let counter = 0;
-    sets.find({}).forEach(set => {
-        counter++;
-        if (counter % 10 === 0) {
-            console.log(`${counter} ${set.name}`);
-        }
-
-        tossups.updateMany(
-            { 'set._id': set._id },
-            { $set: { setName: set.name, updatedAt: new Date() } }
-        );
-        bonuses.updateMany(
-            { 'set._id': set._id },
-            { $set: { setName: set.name, updatedAt: new Date() } }
-        );
-    });
-}
-
-
-function denormalizePacketNames() {
-    let counter = 0;
-    sets.find({}).forEach(set => {
-        counter++;
-        if (counter % 10 === 0) {
-            console.log(`${counter} ${set.name}`);
-        }
-
-        for (const packet of set.packets) {
-            tossups.updateMany(
-                { 'packet._id': packet._id },
-                { $set: { packetName: packet.name, updatedAt: new Date() } }
-            );
-            bonuses.updateMany(
-                { 'packet._id': packet._id },
-                { $set: { packetName: packet.name, updatedAt: new Date() } }
-            );
-        }
-    });
-}
-
-
-function denormalizeSetYears() {
-    let counter = 0;
-    sets.find({}).forEach(set => {
-        const setYear = parseInt(set.name.slice(0, 4));
-
-        sets.updateOne({ _id: set._id }, { $set: { year: setYear } });
-
-        tossups.updateMany(
-            { 'set._id': set._id },
-            { $set: { setYear: setYear, updatedAt: new Date() } }
-        );
-
-        bonuses.updateMany(
-            { 'set._id': set._id },
-            { $set: { setYear: setYear, updatedAt: new Date() } }
-        );
-
-        counter++;
-        if (counter % 20 === 0) {
-            console.log(`${counter} - (${setYear}) - ${set.name}`);
-        }
-    });
-}
-
-
 const fixAcceptEither = (() => {
     const removeParentheses = (string) => {
         return string
@@ -202,37 +135,6 @@ async function fixLeadingColons() {
         );
     });
     console.log('bonuses done');
-}
-
-
-function fixPacketOrders() {
-    sets.find({}).forEach(set => {
-        const correctPackets = [];
-        let hasSwap = false;
-
-        for (let i = 0; i < set.packets.length; i++) {
-            for (let j = 0; j < set.packets.length; j++) {
-                if (parseInt(set.packets[j].name) === i + 1) {
-                // if (String(set.packets[j].name).search(new RegExp(`\\b${i + 1}\\b`)) >= 0) {
-                    correctPackets.push(set.packets[j]);
-                    if (i !== j) hasSwap = true;
-                    break;
-                }
-            }
-        }
-
-        if (hasSwap && correctPackets.length === set.packets.length) {
-            console.log(set.name);
-            console.log(set.packets.map(packet => packet.name));
-            console.log(correctPackets.map(packet => packet.name));
-
-            sets.updateOne({ _id: set._id }, { $set: { packets: correctPackets } });
-            for (let i = 0; i < set.packets.length; i++) {
-                tossups.updateMany({ packet: correctPackets[i]._id }, { $set: { packetNumber: i + 1 } });
-                bonuses.updateMany({ packet: correctPackets[i]._id }, { $set: { packetNumber: i + 1 } });
-            }
-        }
-    });
 }
 
 
@@ -326,6 +228,7 @@ async function getAdmins() {
         { projection: { _id: 0, username: 1 }, sort: { username: 1 } }
     ).toArray();
 }
+
 
 async function listAlternateSubcategories(update = false) {
     tossups.find({
