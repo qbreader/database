@@ -41,14 +41,14 @@ async function deleteAdminBuzzes(packetName) {
 
     for (const admin of admins) {
         console.log(admin.username);
-        console.log(await buzzes.deleteMany({ user_id: admin._id, packetName }));
+        console.log(await buzzes.deleteMany({ user_id: admin._id, 'packet.name': packetName }));
     }
 }
 
 async function deletePacket(packetName) {
     await packets.deleteOne({ name: packetName });
-    await tossups.deleteMany({ packetName });
-    await buzzes.deleteMany({ packetName });
+    await tossups.deleteMany({ 'packet.name': packetName });
+    await buzzes.deleteMany({ 'packet.name': packetName });
 }
 
 async function findMissingAudio() {
@@ -64,30 +64,38 @@ async function findMissingAudio() {
 }
 
 async function getPaymentCount(packetName) {
-    return await payments.countDocuments({ packetName });
+    return await payments.countDocuments({ 'packet.name': packetName });
 }
 
 async function manuallyAddPayment(username, packetName) {
     const user = await users.findOne({ username });
-    if (!user) {
+    const packet = await packets.findOne({ name: packetName });
+
+    if (!user || !packet) {
         return null;
     }
 
-    const user_id = user._id;
-
     return await payments.replaceOne(
-        { user_id, packetName },
-        { user_id, packetName, createdAt: new Date(), manual: true },
-        { upsert: true }
+        { user_id: user._id, 'packet._id': packet._id },
+        {
+            user_id: user._id,
+            packet: {
+                _id: packet._id,
+                name: packet.name,
+            },
+            createdAt: new Date(),
+            manual: true,
+        },
+        { upsert: true },
     );
 }
 
 
 async function renamePacket(oldName, newName) {
-    await buzzes.updateMany({ packetName: oldName }, { $set: { packetName: newName } });
-    await divisionChoices.updateMany({ packetName: oldName }, { $set: { packetName: newName } });
+    await buzzes.updateMany({ 'packet.name': oldName }, { $set: { 'packet.name': newName } });
+    await divisionChoices.updateMany({ 'packet.name': oldName }, { $set: { 'packet.name': newName } });
     await packets.updateOne({ name: oldName }, { $set: { name: newName } });
-    await tossups.updateMany({ packetName: oldName }, { $set: { packetName: newName } });
+    await tossups.updateMany({ 'packet.name': oldName }, { $set: { 'packet.name': newName } });
 }
 
 async function updateScoring(minimumCorrectPoints = 10, maximumCorrectPoints = 20) {

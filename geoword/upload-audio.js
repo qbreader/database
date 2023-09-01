@@ -43,7 +43,7 @@ client.connect().then(async () => {
                 const _id = new ObjectId();
                 const file = fs.readFileSync(PACKET_DIRECTORY + packetName + '/' + division + '/' + filename);
                 await audio.insertOne({ _id: _id, audio: file });
-                await tossups.updateOne({ packetName, division, questionNumber }, { $set: { audio_id: _id } });
+                await tossups.updateOne({ 'packet.name': packetName, division, questionNumber }, { $set: { audio_id: _id } });
                 counter++;
             }
 

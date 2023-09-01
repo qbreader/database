@@ -53,8 +53,10 @@ client.connect().then(async () => {
                 }
 
                 tossup.division = tossup.division || division;
-                tossup.packetName = packetName;
-                tossup.packet_id = packet_id;
+                tossup.packet = {
+                    name: packetName,
+                    _id: packet_id,
+                };
                 tossup.questionNumber = tossup.questionNumber || (index + 1);
             }
 
