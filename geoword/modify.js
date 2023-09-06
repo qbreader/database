@@ -32,6 +32,11 @@ async function copyAudioIds() {
     console.log(counter);
 }
 
+async function deactivateBuzzes(username, packetName) {
+    const user = await users.findOne({ username });
+    console.log(await buzzes.updateMany({ user_id: user._id, 'packet.name': packetName }, { $set: { active: false } }));
+}
+
 async function deleteBuzzes(packetName) {
     await buzzes.deleteMany({ packetName });
 }
