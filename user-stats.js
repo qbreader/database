@@ -93,7 +93,7 @@ async function printUserStats(username) {
     const { position: tossupPosition } = (await tossupData.aggregate(aggregation(tossupCount)).toArray())[0];
     const { position: bonusPosition } = (await bonusData.aggregate(aggregation(bonusCount)).toArray())[0];
 
-    console.log(`User: ${username} (${user_id}))`);
+    console.log(`User: ${username} (${user_id})`);
     console.log(`Tossups: ${tossupCount} (#${tossupPosition})`);
     console.log(`Bonuses: ${bonusCount} (#${bonusPosition})`);
 }
