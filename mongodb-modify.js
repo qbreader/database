@@ -409,6 +409,28 @@ async function removeTrailingBonusesString() {
 }
 
 
+/**
+ * Remove HTML tags from unformatted answer fields.
+ */
+async function sanitizeHTML() {
+    console.log('tossups:', await tossups.countDocuments({ answer: /<\/?[biu]>/ }));
+    for (const tossup of await tossups.find({ answer: /<\/?[biu]>/ }).toArray()) {
+        await tossups.updateOne(
+            { _id: tossup._id },
+            { $set: { answer: tossup.answer.replace(/<\/?[biu]>/g, ''), updatedAt: new Date() } }
+        );
+    }
+
+    console.log('bonuses:', await bonuses.countDocuments({ answers: /<\/?[biu]>/ }));
+    for (const bonus of await bonuses.find({ answers: /<\/?[biu]>/ }).toArray()) {
+        await bonuses.updateOne(
+            { _id: bonus._id },
+            { $set: { answers: bonus.answers.map(answer => answer.replace(/<\/?[biu]>/g, '')), updatedAt: new Date() } }
+        );
+    }
+}
+
+
 async function sanitizeLeadin() {
     const regExp = /(?<=each:) {2}.*/i;
     const count = await bonuses.countDocuments({ leadin: { $regex: regExp } });
