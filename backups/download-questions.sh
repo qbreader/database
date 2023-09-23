@@ -12,4 +12,5 @@ rm -r dump
 cd $(date +%Y-%m-%d_%H:%M:%S)
 bsondump --outFile=tossups.json tossups.bson
 bsondump --outFile=bonuses.json bonuses.bson
+bsondump --outFile=packets.json packets.bson
 bsondump --outFile=sets.json sets.bson
