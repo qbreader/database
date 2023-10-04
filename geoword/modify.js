@@ -77,10 +77,10 @@ async function manuallyAddPayment(username, packetName) {
     const packet = await packets.findOne({ name: packetName });
 
     if (!user || !packet) {
-        return null;
+        return false;
     }
 
-    return await payments.replaceOne(
+    console.log(await payments.replaceOne(
         { user_id: user._id, 'packet._id': packet._id },
         {
             user_id: user._id,
@@ -92,7 +92,9 @@ async function manuallyAddPayment(username, packetName) {
             manual: true,
         },
         { upsert: true },
-    );
+    ));
+
+    return true;
 }
 
 
