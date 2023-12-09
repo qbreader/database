@@ -6,7 +6,8 @@ const uri = `mongodb+srv://${process.env.MONGODB_USERNAME || 'geoffreywu42'}:${p
 const client = new MongoClient(uri);
 client.connect().then(async () => {
     console.log('connected to mongodb');
-    // await printMostActiveUsers(10, 'tossup');
+    await printMostActiveUsers(10, 'tossup');
+    await printMostActiveUsers(10, 'bonus');
     // await printUserStats('');
     // console.log(array.map(user => user.count));
     // console.log(array.map((user) => user.count).reduce((a, b) => a + b));
