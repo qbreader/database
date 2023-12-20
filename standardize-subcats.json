@@ -48,8 +48,8 @@
     "Chemistry": "Chemistry",
     "Phys": "Physics",
     "Physics": "Physics",
-    "Math": "Math",
-    "Mathematics": "Math",
+    "Math": "Other Science",
+    "Mathematics": "Other Science",
     "Astronomy": "Other Science",
     "Astro": "Other Science",
     "Computer Science": "Other Science",
@@ -139,36 +139,31 @@
     "Pop Culture": "Trash",
     "Sports": "Trash",
     "Other": "Other Academic",
-
     "Fine Arts Audiovisual": "Other Fine Arts",
     "Fine Arts Auditory": "Auditory Fine Arts",
     "Fine Arts Other": "Other Fine Arts",
     "Fine Arts Opera": "Other Fine Arts",
     "Fine Arts Visual": "Visual Fine Arts",
-
     "History American": "American History",
     "History British": "European History",
     "History Ancient": "Ancient History",
     "History European": "European History",
     "History World": "World History",
     "History Other": "Other History",
-
     "Science American": "Other Science",
     "Science Biology": "Biology",
     "Science Chemistry": "Chemistry",
     "Science Computer Science": "Other Science",
-    "Science Math": "Math",
+    "Science Math": "Other Science",
     "Science Other": "Other Science",
     "Science Physics": "Physics",
     "Science World": "World Science",
-
     "Literature American": "American Literature",
     "Literature British": "British Literature",
     "Literature Classical": "Classical Literature",
     "Literature European": "European Literature",
     "Literature Other": "Other Literature",
     "Literature World": "World Literature",
-
     "Current Events American": "Current Events",
     "Current Events Other": "Current Events"
 }
