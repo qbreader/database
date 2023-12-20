@@ -384,6 +384,11 @@ async function renameSet(oldName, newName) {
         { 'set._id': set._id },
         { $set: { 'set.name': newName, 'set.year': year, updatedAt: new Date() } }
     ));
+
+    console.log(await packets.updateMany(
+        { 'set._id': set._id },
+        { $set: { 'set.name': newName } }
+    ));
 }
 
 
