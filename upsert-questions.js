@@ -120,6 +120,7 @@ async function upsertPacket({ setName, packetName, packetNumber, folderPath = '.
                     _id: set._id,
                     name: setName,
                     year: set.year,
+                    standard: set.standard,
                 },
                 ...updateDoc.$set,
             });
@@ -201,6 +202,7 @@ async function upsertPacket({ setName, packetName, packetNumber, folderPath = '.
                     _id: set._id,
                     name: setName,
                     year: set.year,
+                    standard: set.standard,
                 },
                 ...updateDoc.$set,
             });
@@ -235,7 +237,7 @@ async function upsertSet(setName, difficulty = 0, folderPath = './') {
     if (!setAlreadyExists) {
         console.log(`Set ${setName} does not exist`);
         setAlreadyExists = false;
-        await sets.insertOne({ _id: new ObjectId(), name: setName, year: parseInt(setName.slice(0, 4)), difficulty: difficulty });
+        await sets.insertOne({ _id: new ObjectId(), name: setName, year: parseInt(setName.slice(0, 4)), difficulty: difficulty, standard: true });
     }
 
     let packetNumber = 0;
