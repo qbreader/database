@@ -2,7 +2,7 @@ import 'dotenv/config';
 
 import { tossupToString, bonusToString } from './stringify.js';
 
-import { readFileSync } from 'fs';
+import { readFileSync, writeFileSync } from 'fs';
 import { createRequire } from 'module';
 import { MongoClient, ObjectId } from 'mongodb';
 
