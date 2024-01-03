@@ -3,7 +3,8 @@
   "type": "module",
   "dependencies": {
     "dotenv": "^16.0.2",
-    "mongodb": "^4.9.0"
+    "mongodb": "^4.9.0",
+    "openai": "^4.24.1"
   },
   "devDependencies": {
     "eslint": "^8.28.0"
