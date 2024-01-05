@@ -30,7 +30,7 @@ let counter = 0;
 
 for (const line of lines) {
     const question = JSON.parse(line);
-    question.alternate_subcategory = question.alternate_subcategory.split('\n')[0];
+    question.alternate_subcategory = question.alternate_subcategory.split('\n')[0].trim();
     if (!categories.includes(question.alternate_subcategory)) {
         console.log(question);
         continue;
