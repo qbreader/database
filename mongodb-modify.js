@@ -539,8 +539,8 @@ async function updateOneSubcategory(_id, type, subcategory, clearReports = true)
 
 
 /**
- * Each line of the file at `filename` should be a valid JSON object with a `_id`, `type`, `category`, and `subcategory` field.
- * This function updates each document located at `_id` with the corresponding `category` and `subcategory`.
+ * Each line of the file at `filename` should be a valid JSON object with a `_id`, `type`, and `subcategory` field.
+ * This function updates each document located at `_id` with the corresponding `subcategory` and the appropriate `category`.
  * @param {String} filename the file from which to read in data for the categories
  */
 async function updateManySubcategories(filename='input.txt') {
