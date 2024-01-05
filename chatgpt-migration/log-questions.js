@@ -1,3 +1,5 @@
+import 'dotenv/config';
+
 import { writeFileSync } from 'fs';
 import { MongoClient } from 'mongodb';
 
