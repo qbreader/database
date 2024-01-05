@@ -24,10 +24,20 @@ function bonusToString(bonus) {
     return string;
 }
 
-await tossups.find({ subcategory: 'Other Science', alternate_subcategory: { $exists: false } }).forEach(tossup => {
-    writeFileSync('tossups.txt', tossup._id + 'QQQQQQQQ' + tossup.question + ' ' + tossup.answer + '\n', { flag: 'a' });
+const subcategory = 'Social Science';
+
+await tossups.find({ subcategory: subcategory, alternate_subcategory: { $exists: false } }).forEach(tossup => {
+    writeFileSync(
+        'tossups-ss.txt',
+        JSON.stringify({ _id: tossup._id, text: tossup.question + ' ' + tossup.answer }) + '\n',
+        { flag: 'a' },
+    );
 });
 
-await bonuses.find({ subcategory: 'Other Science', alternate_subcategory: { $exists: false } }).forEach(bonus => {
-    writeFileSync('bonuses.txt', bonus._id + 'QQQQQQQQ' + bonusToString(bonus, false).replace(/\n/g, ' ') + '\n', { flag: 'a' });
+await bonuses.find({ subcategory: subcategory, alternate_subcategory: { $exists: false } }).forEach(bonus => {
+    writeFileSync(
+        'bonuses-ss.txt',
+        JSON.stringify({ _id: bonus._id, text: bonusToString(bonus) }) + '\n',
+        { flag: 'a' },
+    );
 });

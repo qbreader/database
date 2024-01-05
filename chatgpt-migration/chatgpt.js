@@ -36,7 +36,7 @@ const lines = readFileSync('tossups.txt', 'utf-8').split('\n');
 // const lines = readFileSync('bonuses.txt', 'utf-8').split('\n');
 
 for (const line of lines) {
-    const [_id, text] = line.split('QQQQQQQQ');
+    const { _id, text } = JSON.parse(line);
     const category = await classifyAlternateSubcategory(text, categories);
-    writeFileSync('output.txt', JSON.stringify({ id: _id, alternate_subcategory: category }) + '\n', { flag: 'a' });
+    writeFileSync('output-tossups-ss.txt', JSON.stringify({ _id: _id, alternate_subcategory: category }) + '\n', { flag: 'a' });
 }
