@@ -13,6 +13,15 @@ const questionDatabase = client.db('qbreader');
 const tossups = questionDatabase.collection('tossups');
 const bonuses = questionDatabase.collection('bonuses');
 
+function toTitleCase(str) {
+    return str.replace(
+        /\w\S*/g,
+        function(txt) {
+            return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+        }
+    );
+}
+
 // const lines = readFileSync('output-tossups-ofa.txt', 'utf-8').split('\n');
 const lines = readFileSync('output-bonuses-ofa.txt', 'utf-8').split('\n');
 
@@ -30,7 +39,10 @@ let counter = 0;
 
 for (const line of lines) {
     const question = JSON.parse(line);
-    question.alternate_subcategory = question.alternate_subcategory.split('\n')[0].trim();
+    question.alternate_subcategory = question.alternate_subcategory.split('\n')[0];
+    question.alternate_subcategory = question.alternate_subcategory.trim().replace(/[.'"]/g, '');
+    question.alternate_subcategory = toTitleCase(question.alternate_subcategory);
+
     if (!categories.includes(question.alternate_subcategory)) {
         console.log(question);
         continue;
