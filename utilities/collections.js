@@ -17,3 +17,7 @@ export const packets = questionDatabase.collection('packets');
 const accountInfo = client.db('account-info');
 export const tossupData = accountInfo.collection('tossup-data');
 export const bonusData = accountInfo.collection('bonus-data');
+
+export const closeConnection = async () => {
+    await client.close();
+};
