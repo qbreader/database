@@ -8,9 +8,9 @@ const cats = require('../../subcat-to-cat.json');
 
 /**
  *
- * @param {String | ObjectId} _id the id of the question to update
+ * @param {string | ObjectId} _id the id of the question to update
  * @param {'tossup' | 'bonus'} type the type of question to update
- * @param {String} subcategory the new subcategory to set
+ * @param {string} subcategory the new subcategory to set
  * @param {Boolean} clearReports whether to clear the reports field
  * @returns {Promise<UpdateResult>}
  */
@@ -25,17 +25,23 @@ export default async function updateOneSubcategory(_id, type, subcategory, clear
         _id = new ObjectId(_id);
     }
 
-    const updateDoc = { $set: { category: cats[subcategory], subcategory: subcategory, updatedAt: new Date() } };
+    const category = cats[subcategory];
 
-    if (clearReports)
-        updateDoc['$unset'] = { reports: 1 };
+    const updateDoc = {
+        $set: { category: category, subcategory: subcategory, updatedAt: new Date() },
+        $unset: {},
+    };
+
+    if (clearReports) {
+        updateDoc['$unset']['reports'] = 1;
+    }
 
     switch (type) {
     case 'tossup':
-        tossupData.updateMany({ tossup_id: _id }, { $set: { category: cats[subcategory], subcategory: subcategory } });
+        tossupData.updateMany({ tossup_id: _id }, { $set: { category: category, subcategory: subcategory } });
         return await tossups.updateOne({ _id: _id }, updateDoc);
     case 'bonus':
-        bonusData.updateMany({ bonus_id: _id }, { $set: { category: cats[subcategory], subcategory: subcategory } });
+        bonusData.updateMany({ bonus_id: _id }, { $set: { category: category, subcategory: subcategory } });
         return await bonuses.updateOne({ _id: ObjectId(_id) }, updateDoc);
     }
 }
