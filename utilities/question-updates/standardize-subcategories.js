@@ -1,4 +1,4 @@
-import updateOneSubcategory from './update-one-subcategory.js';
+import updateSubcategory from './update-subcategory.js';
 
 import { tossups, bonuses } from '../collections.js';
 
@@ -21,7 +21,7 @@ export default function standardizeSubcategories() {
         if (question.subcategory in subcats) {
             console.log(`${question.subcategory} -> ${subcats[question.subcategory]}`);
             question.subcategory = subcats[question.subcategory];
-            updateOneSubcategory(question._id, 'tossup', question.subcategory, false);
+            updateSubcategory(question._id, 'tossup', question.subcategory, false);
         } else {
             console.log(`${question.subcategory} not found`);
         }
@@ -41,7 +41,7 @@ export default function standardizeSubcategories() {
         if (question.subcategory in subcats) {
             console.log(`${question.subcategory} -> ${subcats[question.subcategory]}`);
             question.subcategory = subcats[question.subcategory];
-            updateOneSubcategory(question._id, 'bonus', question.subcategory, false);
+            updateSubcategory(question._id, 'bonus', question.subcategory, false);
         } else {
             console.log(`${question.subcategory} not found`);
         }

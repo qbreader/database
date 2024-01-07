@@ -1,4 +1,4 @@
-import updateOneSubcategory from './update-one-subcategory.js';
+import updateSubcategory from './update-subcategory.js';
 
 import { readFileSync } from 'fs';
 
@@ -18,7 +18,7 @@ export default async function updateManySubcategories(filename = 'input.txt') {
             continue;
 
         const { _id, subcategory, type } = JSON.parse(line);
-        const result = await updateOneSubcategory(_id, type, subcategory, false);
+        const result = await updateSubcategory(_id, type, subcategory, false);
 
         counter++;
         if (counter % 100 == 0) {

@@ -15,7 +15,7 @@ const cats = require('../../subcat-to-cat.json');
  * @returns {Promise<UpdateResult>}
  */
 
-export default async function updateOneSubcategory(_id, type, subcategory, clearReports = true) {
+export default async function updateSubcategory(_id, type, subcategory, clearReports = true) {
     if (!(subcategory in cats)) {
         console.log(`Subcategory ${subcategory} not found`);
         return;
