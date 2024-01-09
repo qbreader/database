@@ -1,7 +1,24 @@
-import { bonuses, tossups } from '../collections.js';
+import { bonuses, sets, tossups } from '../collections.js';
+
+
+async function validateYears() {
+    let total = 0;
+    const results = await sets.find({}).toArray();
+
+    for (const set of results) {
+        if (set.year !== parseInt(set.name.split(' ')[0])) {
+            console.log(set.name);
+            total++;
+        }
+    }
+
+    return total;
+}
 
 
 export default async function setValidation() {
+    let total = await validateYears();
+
     const aggregation = [
         { $lookup: { from: 'sets', localField: 'set._id', foreignField: '_id', as: 'correctSet' } },
         { $unwind: '$correctSet' },
@@ -12,8 +29,6 @@ export default async function setValidation() {
             { $expr: { $ne: ['$correctSet.difficulty', '$difficulty'] } },
         ] } },
     ];
-
-    let total = 0;
 
     const tossupResults = await tossups.aggregate(aggregation).toArray();
     total += tossupResults.length;
