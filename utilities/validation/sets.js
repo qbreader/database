@@ -1,38 +1,56 @@
-import { bonuses, sets, tossups } from '../collections.js';
+import { bonuses, tossups } from '../collections.js';
 
-// TODO: use a join inside an aggregation to make it faster
+
 export default async function setValidation() {
+    const aggregation = [
+        { $lookup: { from: 'sets', localField: 'set._id', foreignField: '_id', as: 'correctSet' } },
+        { $unwind: '$correctSet' },
+        { $match: { $or: [
+            { $expr: { $ne: ['$correctSet.name', '$set.name'] } },
+            { $expr: { $ne: ['$correctSet.standard', '$set.standard'] } },
+            { $expr: { $ne: ['$correctSet.year', '$set.year'] } },
+            { $expr: { $ne: ['$correctSet.difficulty', '$difficulty'] } },
+        ] } },
+    ];
+
     let total = 0;
 
-    for (const set of await sets.find({}).toArray()) {
-        const query = {
-            'set._id': set._id,
-            $or: [
-                { 'set.name': { $ne: set.name } },
-                { 'set.year': { $ne: set.year } },
-                { 'set.standard': { $ne: set.standard } },
-                { difficulty: { $ne: set.difficulty } },
-            ]
-        };
+    const tossupResults = await tossups.aggregate(aggregation).toArray();
+    total += tossupResults.length;
+    const bulkTossup = tossups.initializeUnorderedBulkOp();
 
-        const update = {
+    for (const tossup of tossupResults) {
+        bulkTossup.find({ _id: tossup._id }).updateOne({
             $set: {
-                'set.name': set.name,
-                'set.year': set.year,
-                'set.standard': set.standard,
-                difficulty: set.difficulty,
+                'set.name': tossup.correctSet.name,
+                'set.year': tossup.correctSet.year,
+                'set.standard': tossup.correctSet.standard,
+                difficulty: tossup.correctSet.difficulty,
             }
-        };
+        });
+    }
 
-        const { modifiedCount: tossupModifiedCount } = await tossups.updateMany(query, update);
-        total += tossupModifiedCount;
+    if (tossupResults.length > 0) {
+        await bulkTossup.execute();
+    }
 
-        const { modifiedCount: bonusModifiedCount } = await bonuses.updateMany(query, update);
-        total += bonusModifiedCount;
+    const bonusResults = await bonuses.aggregate(aggregation).toArray();
+    total += bonusResults.length;
+    const bulkBonus = bonuses.initializeUnorderedBulkOp();
 
-        if (tossupModifiedCount + bonusModifiedCount > 0) {
-            console.log(set);
-        }
+    for (const bonus of bonusResults) {
+        bulkBonus.find({ _id: bonus._id }).updateOne({
+            $set: {
+                'set.name': bonus.correctSet.name,
+                'set.year': bonus.correctSet.year,
+                'set.standard': bonus.correctSet.standard,
+                difficulty: bonus.correctSet.difficulty,
+            }
+        });
+    }
+
+    if (bonusResults.length > 0) {
+        await bulkBonus.execute();
     }
 
     return total;
