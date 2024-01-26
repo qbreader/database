@@ -1,4 +1,5 @@
 import alternateSubcategoryValidation from './alternate-subcategory.js';
+import bonusesValidation from './bonuses.js';
 import categoryValidation from './category.js';
 import deprecatedFieldsValidation from './deprecated-fields.js';
 import packetValidation from './packets.js';
@@ -13,6 +14,7 @@ export default async function validateEverything(verbose = true) {
     total += await categoryValidation(verbose);
     total += await subcategoryValidation(verbose);
 
+    total += await bonusesValidation(verbose);
     total += await packetValidation(verbose);
     total += await setValidation(verbose);
 
