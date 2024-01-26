@@ -33,9 +33,9 @@ export default function fixAcceptEither() {
                 {
                     $set: {
                         formatted_answer: tossup.formatted_answer.replace(/(?<=[a-z])(?=[A-Z])/, '</u></b> <b><u>'),
-                        answer: tossup.answer.replace(/(?<=[a-z])(?=[A-Z])/, ' ')
-                    }
-                }
+                        answer: tossup.answer.replace(/(?<=[a-z])(?=[A-Z])/, ' '),
+                    },
+                },
             );
 
             count++;

@@ -22,7 +22,7 @@ export default async function packetValidation(verbose = true) {
             $set: {
                 'packet.name': tossup.correctPacket.name,
                 'packet.number': tossup.correctPacket.number,
-            }
+            },
         });
     }
 
@@ -43,7 +43,7 @@ export default async function packetValidation(verbose = true) {
             $set: {
                 'packet.name': bonus.correctPacket.name,
                 'packet.number': bonus.correctPacket.number,
-            }
+            },
         });
     }
 
@@ -68,7 +68,7 @@ export default async function packetValidation(verbose = true) {
         bulkPacket.find({ _id: packet._id }).updateOne({
             $set: {
                 'set.name': packet.correctSet.name,
-            }
+            },
         });
     }
 

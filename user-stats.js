@@ -33,16 +33,16 @@ async function getMostActiveUsers(limit, type = 'tossup') {
     const aggregation = [
         { $group: {
             _id: '$user_id',
-            count: { '$sum': 1 }
+            count: { '$sum': 1 },
         } },
         { $sort: {
-            count: -1
+            count: -1,
         } },
         { $lookup: {
             from: 'users',
             localField: '_id',
             foreignField: '_id',
-            as: 'user'
+            as: 'user',
         } },
         { $project: {
             username: { $arrayElemAt: [ '$user.username', 0 ] },
@@ -83,12 +83,12 @@ async function printUserStats(username) {
     const aggregation = (count) => [
         { $group: {
             _id: '$user_id',
-            count: { '$sum': 1 }
+            count: { '$sum': 1 },
         } },
         { $match: {
-            count: { $gte: count }
+            count: { $gte: count },
         } },
-        { $count: 'position' }
+        { $count: 'position' },
     ];
 
     const { position: tossupPosition } = (await tossupData.aggregate(aggregation(tossupCount)).toArray())[0];

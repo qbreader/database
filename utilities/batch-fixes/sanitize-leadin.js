@@ -11,7 +11,7 @@ export default async function sanitizeLeadin() {
     bonuses.find({ leadin: { $regex: regExp } }).forEach(question => {
         bonuses.updateOne(
             { _id: question._id },
-            { $set: { leadin: question.leadin.replace(regExp, '').trim(), updatedAt: new Date() } }
+            { $set: { leadin: question.leadin.replace(regExp, '').trim(), updatedAt: new Date() } },
         );
 
         counter++;

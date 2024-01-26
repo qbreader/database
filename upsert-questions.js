@@ -90,7 +90,7 @@ async function upsertPacket({ setName, packetName, packetNumber, folderPath = '.
             },
             $unset: {
                 reports: '',
-            }
+            },
         };
 
         if (tossup.alternate_subcategory) {
@@ -164,7 +164,7 @@ async function upsertPacket({ setName, packetName, packetNumber, folderPath = '.
             },
             $unset: {
                 reports: '',
-            }
+            },
         };
 
         if (bonus.alternate_subcategory) {

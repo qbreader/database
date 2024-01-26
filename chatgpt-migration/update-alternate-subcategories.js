@@ -18,7 +18,7 @@ function toTitleCase(str) {
         /\w\S*/g,
         function(txt) {
             return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
-        }
+        },
     );
 }
 
@@ -55,7 +55,7 @@ for (const line of lines) {
 
     await bonuses.updateOne(
         { _id: new ObjectId(question._id) },
-        { $set: { alternate_subcategory: question.alternate_subcategory } }
+        { $set: { alternate_subcategory: question.alternate_subcategory } },
     );
 
     counter++;

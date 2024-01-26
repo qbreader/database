@@ -12,14 +12,14 @@ export default async function removeTrailingBonusesString() {
                 $set: {
                     answer: tossup.answer.replace(/bonuses.*/i, ''),
                     updatedAt: new Date(),
-                }
-            }
+                },
+            },
         );
 
         if (tossup.formatted_answer) {
             tossups.updateOne(
                 { _id: tossup._id },
-                { $set: { formatted_answer: tossup.formatted_answer.replace(/(<b><u>)?bonuses.*/i, '') } }
+                { $set: { formatted_answer: tossup.formatted_answer.replace(/(<b><u>)?bonuses.*/i, '') } },
             );
         }
     });

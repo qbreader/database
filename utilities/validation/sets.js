@@ -41,7 +41,7 @@ export default async function setValidation() {
                 'set.year': tossup.correctSet.year,
                 'set.standard': tossup.correctSet.standard,
                 difficulty: tossup.correctSet.difficulty,
-            }
+            },
         });
     }
 
@@ -60,7 +60,7 @@ export default async function setValidation() {
                 'set.year': bonus.correctSet.year,
                 'set.standard': bonus.correctSet.standard,
                 difficulty: bonus.correctSet.difficulty,
-            }
+            },
         });
     }
 

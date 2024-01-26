@@ -13,7 +13,7 @@ export default async function deprecatedFieldsValidation(verbose = true) {
             { $expr: { $ne: ['$set_id', '$set._id'] } },
             { $expr: { $ne: ['$setName', '$set.name'] } },
             { $expr: { $ne: ['$setYear', '$set.year'] } },
-        ]
+        ],
     };
 
     const update = [{

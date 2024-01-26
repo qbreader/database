@@ -10,8 +10,8 @@ export default async function fixLeadingColons() {
                 $set: {
                     formatted_answer: tossup.formatted_answer.replace(/^:/, '').trim(),
                     answer: tossup.answer.replace(/^:/, '').trim(),
-                }
-            }
+                },
+            },
         );
     });
     console.log('tossups done');
@@ -23,9 +23,9 @@ export default async function fixLeadingColons() {
             {
                 $set: {
                     formatted_answers: bonus.formatted_answers.map(answer => answer.replace(/^:/, '').trim()),
-                    answers: bonus.answers.map(answer => answer.replace(/^:/, '').trim())
-                }
-            }
+                    answers: bonus.answers.map(answer => answer.replace(/^:/, '').trim()),
+                },
+            },
         );
     });
     console.log('bonuses done');

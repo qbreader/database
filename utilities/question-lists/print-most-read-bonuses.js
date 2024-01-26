@@ -7,7 +7,7 @@ export default async function printMostReadBonuses(limit = 1) {
         { $match: { bonus_id: { $exists: true } } },
         { $group: { _id: '$bonus_id', count: { $sum: 1 } } },
         { $sort: { count: -1 } },
-        { $limit: limit }
+        { $limit: limit },
     ]).forEach(result => {
         bonuses.findOne({ _id: result._id }).then(question => {
             console.log(`Number of times read: ${result.count}`);

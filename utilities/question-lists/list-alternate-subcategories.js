@@ -3,7 +3,7 @@ import { tossups, bonuses, tossupData, bonusData } from '../collections.js';
 
 export default async function listAlternateSubcategories(update = false) {
     tossups.find({
-        subcategory: { $in: ['Poetry', 'Drama', 'Long Fiction', 'Short Fiction'] }
+        subcategory: { $in: ['Poetry', 'Drama', 'Long Fiction', 'Short Fiction'] },
     }).forEach(question => {
         const { _id } = question;
         const text = question.question + ' ' + question.answer;
@@ -11,7 +11,7 @@ export default async function listAlternateSubcategories(update = false) {
     });
 
     bonuses.find({
-        subcategory: { $in: ['Poetry', 'Drama', 'Long Fiction', 'Short Fiction'] }
+        subcategory: { $in: ['Poetry', 'Drama', 'Long Fiction', 'Short Fiction'] },
     }).forEach(question => {
         const { _id } = question;
         const text = question.leadin + question.parts.reduce((a, b) => a + ' ' + b, '') + question.answers.reduce((a, b) => a + ' ' + b, '');
@@ -21,22 +21,22 @@ export default async function listAlternateSubcategories(update = false) {
     if (update) {
         console.log(await tossups.updateMany(
             { subcategory: { $in: ['Poetry', 'Drama', 'Long Fiction', 'Short Fiction'] } },
-            { $rename: { subcategory: 'alternate_subcategory' } }
+            { $rename: { subcategory: 'alternate_subcategory' } },
         ));
 
         console.log(await bonuses.updateMany(
             { subcategory: { $in: ['Poetry', 'Drama', 'Long Fiction', 'Short Fiction'] } },
-            { $rename: { subcategory: 'alternate_subcategory' } }
+            { $rename: { subcategory: 'alternate_subcategory' } },
         ));
 
         console.log(await tossupData.updateMany(
             { subcategory: { $in: ['Poetry', 'Drama', 'Long Fiction', 'Short Fiction'] } },
-            { $rename: { subcategory: 'alternate_subcategory' } }
+            { $rename: { subcategory: 'alternate_subcategory' } },
         ));
 
         console.log(await bonusData.updateMany(
             { subcategory: { $in: ['Poetry', 'Drama', 'Long Fiction', 'Short Fiction'] } },
-            { $rename: { subcategory: 'alternate_subcategory' } }
+            { $rename: { subcategory: 'alternate_subcategory' } },
         ));
     }
 }

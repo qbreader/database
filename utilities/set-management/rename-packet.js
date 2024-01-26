@@ -6,11 +6,11 @@ export default async function renamePacket(setName, packetNumber, newPacketName)
 
     console.log(await tossups.updateMany(
         { 'packet._id': packet._id },
-        { $set: { 'packet.name': newPacketName, updatedAt: new Date() } }
+        { $set: { 'packet.name': newPacketName, updatedAt: new Date() } },
     ));
 
     console.log(await bonuses.updateMany(
         { 'packet._id': packet._id },
-        { $set: { 'packet.name': newPacketName, updatedAt: new Date() } }
+        { $set: { 'packet.name': newPacketName, updatedAt: new Date() } },
     ));
 }

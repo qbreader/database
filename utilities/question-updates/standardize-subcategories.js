@@ -13,7 +13,7 @@ export default function standardizeSubcategories() {
 
     tossups.find(
         { subcategory: { $nin: Object.keys(cats) } },
-        { projection: { _id: 1, category: 1, subcategory: 1 } }
+        { projection: { _id: 1, category: 1, subcategory: 1 } },
     ).forEach(question => {
         counter++;
         if (question.subcategory === undefined || question.subcategory in cats) return;
@@ -33,7 +33,7 @@ export default function standardizeSubcategories() {
 
     bonuses.find(
         { subcategory: { $nin: Object.keys(cats) } },
-        { projection: { _id: 1, category: 1, subcategory: 1 } }
+        { projection: { _id: 1, category: 1, subcategory: 1 } },
     ).forEach(question => {
         counter++;
         if (question.subcategory === undefined || question.subcategory in cats) return;

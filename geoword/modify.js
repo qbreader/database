@@ -62,9 +62,9 @@ async function findMissingAudio() {
             from: 'audio',
             localField: '_id',
             foreignField: 'tossup_id',
-            as: 'audio'
+            as: 'audio',
         } },
-        { $match: { audio: { $size: 0 } } }
+        { $match: { audio: { $size: 0 } } },
     ]).toArray();
 }
 

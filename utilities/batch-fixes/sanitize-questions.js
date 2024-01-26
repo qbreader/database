@@ -8,7 +8,7 @@ export default async function sanitizeQuestions() {
     for (const tossup of await tossups.find({ answer: /<\/?[biu]>/ }).toArray()) {
         await tossups.updateOne(
             { _id: tossup._id },
-            { $set: { answer: tossup.answer.replace(/<\/?[biu]>/g, ''), updatedAt: new Date() } }
+            { $set: { answer: tossup.answer.replace(/<\/?[biu]>/g, ''), updatedAt: new Date() } },
         );
     }
 
@@ -16,7 +16,7 @@ export default async function sanitizeQuestions() {
     for (const bonus of await bonuses.find({ answers: /<\/?[biu]>/ }).toArray()) {
         await bonuses.updateOne(
             { _id: bonus._id },
-            { $set: { answers: bonus.answers.map(answer => answer.replace(/<\/?[biu]>/g, '')), updatedAt: new Date() } }
+            { $set: { answers: bonus.answers.map(answer => answer.replace(/<\/?[biu]>/g, '')), updatedAt: new Date() } },
         );
     }
 }
