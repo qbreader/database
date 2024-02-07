@@ -98,12 +98,13 @@ async function upsertPacket({ setName, packetName, packetNumber, folderPath = '.
         }
 
         if (index < tossupCount && packetAlreadyExists) {
-            const { _id } = await tossups.findOneAndUpdate({ packet_id: packet_id, questionNumber: index + 1 }, updateDoc);
+            const { _id } = await tossups.findOneAndUpdate({ packet_id: packet_id, number: index + 1 }, updateDoc);
             await tossupData.updateMany({ tossup_id: _id }, { $set: { category: tossup.category, subcategory: tossup.subcategory } });
         } else {
             tossupBulk.insert({
                 packet_id: packet_id,
                 questionNumber: index + 1,
+                number: index + 1,
                 set_id: set._id,
                 type: 'tossup',
                 createdAt: new Date(),
@@ -180,12 +181,13 @@ async function upsertPacket({ setName, packetName, packetNumber, folderPath = '.
         }
 
         if (index < bonusCount && packetAlreadyExists) {
-            const { _id } = await bonuses.findOneAndUpdate({ packet_id: packet_id, questionNumber: index + 1 }, updateDoc);
+            const { _id } = await bonuses.findOneAndUpdate({ packet_id: packet_id, number: index + 1 }, updateDoc);
             await bonusData.updateMany({ bonus_id: _id }, { $set: { category: bonus.category, subcategory: bonus.subcategory } });
         } else {
             bonusBulk.insert({
                 packet_id: packet_id,
                 questionNumber: index + 1,
+                number: index + 1,
                 set_id: set._id,
                 type: 'bonus',
                 createdAt: new Date(),

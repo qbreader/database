@@ -6,6 +6,8 @@ export default async function deprecatedFieldsValidation(verbose = true) {
 
     const query = {
         $or: [
+            { $expr: { $ne: ['$number', '$questionNumber'] } },
+
             { $expr: { $ne: ['$packet_id', '$packet._id'] } },
             { $expr: { $ne: ['$packetName', '$packet.name'] } },
             { $expr: { $ne: ['$packetNumber', '$packet.number'] } },
@@ -18,6 +20,8 @@ export default async function deprecatedFieldsValidation(verbose = true) {
 
     const update = [{
         $set: {
+            number: '$questionNumber',
+
             packet_id: '$packet._id',
             packetName: '$packet.name',
             packetNumber: '$packet.number',
