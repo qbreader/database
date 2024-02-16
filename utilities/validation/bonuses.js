@@ -38,6 +38,7 @@ export default async function bonusesValidation(verbose = true) {
         { '$match': {
             'valid': false,
         } },
+        { $sort: { 'answers_length': 1, 'set.year': 1 } },
     ];
 
     for (const bonus of await bonuses.aggregate(aggregation1).toArray()) {
