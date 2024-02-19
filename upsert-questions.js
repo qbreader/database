@@ -229,17 +229,18 @@ async function upsertPacket({ setName, packetName, packetNumber, folderPath = '.
  *
  * @param {string} setName
  * @param {number} difficulty
- * @param {string} folderPath - the folder that the set is in. Defaults to the current directory.
+ * @param {boolean} [standard=true]
+ * @param {string} [folderPath='./'] - the folder that the set is in. Defaults to the current directory.
  * @returns {Promise<boolean>} whether the set existed before updating
  */
-async function upsertSet(setName, difficulty = 0, folderPath = './') {
+async function upsertSet(setName, difficulty, standard = true, folderPath = './') {
     let setAlreadyExists = await sets.countDocuments({ name: setName });
     setAlreadyExists = !!setAlreadyExists;
 
     if (!setAlreadyExists) {
         console.log(`Set ${setName} does not exist`);
         setAlreadyExists = false;
-        await sets.insertOne({ _id: new ObjectId(), name: setName, year: parseInt(setName.slice(0, 4)), difficulty: difficulty, standard: true });
+        await sets.insertOne({ _id: new ObjectId(), name: setName, year: parseInt(setName.slice(0, 4)), difficulty: difficulty, standard: standard });
     }
 
     let packetNumber = 0;
