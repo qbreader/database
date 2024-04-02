@@ -24,20 +24,30 @@ function bonusToString(bonus) {
     return string;
 }
 
-const subcategory = 'Social Science';
 
-await tossups.find({ subcategory: subcategory, alternate_subcategory: { $exists: false } }).forEach(tossup => {
-    writeFileSync(
-        'tossups-ss.txt',
-        JSON.stringify({ _id: tossup._id, text: tossup.question + ' ' + tossup.answer }) + '\n',
-        { flag: 'a' },
-    );
-});
+/**
+ * Logs questions to the specified files.
+ * @param {Object} filter - The filter object to specify the criteria for selecting questions.
+ * @param {string} [tossupFilename='tossup-log.txt'] - The filename for the tossup log file.
+ * @param {string} [bonusFilename='bonus-log.txt'] - The filename for the bonus log file.
+ * @returns {Promise<void>} A promise that resolves when the logging is complete.
+ */
+async function logQuestions(filter, tossupFilename='tossup-log.txt', bonusFilename='bonus-log.txt') {
+    await tossups.find(filter).forEach(tossup => {
+        writeFileSync(
+            tossupFilename,
+            JSON.stringify({ _id: tossup._id, text: tossup.question + ' ' + tossup.answer }) + '\n',
+            { flag: 'a' },
+        );
+    });
 
-await bonuses.find({ subcategory: subcategory, alternate_subcategory: { $exists: false } }).forEach(bonus => {
-    writeFileSync(
-        'bonuses-ss.txt',
-        JSON.stringify({ _id: bonus._id, text: bonusToString(bonus) }) + '\n',
-        { flag: 'a' },
-    );
-});
+    await bonuses.find(filter).forEach(bonus => {
+        writeFileSync(
+            bonusFilename,
+            JSON.stringify({ _id: bonus._id, text: bonusToString(bonus) }) + '\n',
+            { flag: 'a' },
+        );
+    });
+}
+
+// await logQuestions({ 'reports.reason': 'wrong-category' });

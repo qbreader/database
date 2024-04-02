@@ -1,5 +1,7 @@
 import 'dotenv/config';
 
+import { categories, alternate_subcategories, subsubcategories, SUBCATEGORY_TO_CATEGORY } from './constants.js';
+
 import { readFileSync, writeFileSync } from 'fs';
 import OpenAI from 'openai';
 
@@ -7,7 +9,16 @@ const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
 });
 
-async function classifyAlternateSubcategory(text, categories) {
+function toTitleCase(str) {
+    return str.replace(
+        /\w\S*/g,
+        function(txt) {
+            return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+        },
+    );
+}
+
+async function classifyCategory(text, categories) {
     categories = categories.map(category => `"${category}"`).join(', ');
     const content = `Classify the following text as one of ${categories}. Your response should consist of one of the categories and nothing else. ${text}`;
 
@@ -18,25 +29,38 @@ async function classifyAlternateSubcategory(text, categories) {
         n: 1,
     });
 
-    const category = stream.choices[0].message.content;
+    const category = toTitleCase(stream.choices[0].message.content.split('\n')[0].trim().replace(/[.'"]/g, ''));
 
     return category;
 }
 
-const categories = [
-    'Math',
-    'Astronomy',
-    'Computer Science',
-    'Earth Science',
-    'Engineering',
-    'Other',
-];
 
-const lines = readFileSync('tossups.txt', 'utf-8').split('\n');
-// const lines = readFileSync('bonuses.txt', 'utf-8').split('\n');
+async function classify(text) {
+    const subcategory = await classifyCategory(text, Object.keys(SUBCATEGORY_TO_CATEGORY));
+    const category = SUBCATEGORY_TO_CATEGORY[subcategory];
+    let alternate_subcategory = undefined;
 
-for (const line of lines) {
-    const { _id, text } = JSON.parse(line);
-    const category = await classifyAlternateSubcategory(text, categories);
-    writeFileSync('output-tossups-ss.txt', JSON.stringify({ _id: _id, alternate_subcategory: category }) + '\n', { flag: 'a' });
+    if (subsubcategories[subcategory]) {
+        alternate_subcategory = await classifyCategory(text, subsubcategories[subcategory]);
+        return { category, subcategory, alternate_subcategory };
+    }
+
+    if (alternate_subcategories[category]) {
+        alternate_subcategory = await classifyCategory(text, alternate_subcategories[category]);
+        return { category, subcategory, alternate_subcategory };
+    }
+
+    return { category, subcategory };
+}
+
+for (const [filename, lines] of [
+    // ['output-tossup.txt', readFileSync('tossup-log.txt', 'utf-8').split('\n')],
+    // ['output-bonus.txt', readFileSync('bonus-log.txt', 'utf-8').split('\n')],
+]) {
+    for (const line of lines) {
+        const { _id, text } = JSON.parse(line);
+        const classification = await classify(text);
+        classification._id = _id;
+        writeFileSync(filename, JSON.stringify(classification) + '\n', { flag: 'a' });
+    }
 }
