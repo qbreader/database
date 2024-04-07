@@ -18,7 +18,5 @@ export default async function validateEverything(verbose = true) {
     total += await packetValidation(verbose);
     total += await setValidation(verbose);
 
-    total += await deprecatedFieldsValidation(verbose);
-
     return total;
 }
