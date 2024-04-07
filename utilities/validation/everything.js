@@ -7,7 +7,7 @@ import setValidation from './sets.js';
 import subcategoryValidation from './subcategory.js';
 
 
-export default async function validateEverything(verbose = true) {
+export default async function everythingValidation(verbose = true) {
     let total = 0;
 
     total += await alternateSubcategoryValidation(verbose);
