@@ -1,17 +1,17 @@
 import { tossups, bonuses } from '../collections.js';
 
-export default function listSetsWithoutField(field) {
-    tossups.aggregate([
+export default async function listSetsWithoutField(field) {
+    for (const set of await tossups.aggregate([
         { $match: { [field]: { $exists: false } } },
         { $group: { _id: '$set.name' } },
-    ]).forEach(set => {
+    ]).toArray()) {
         console.log(set._id);
-    });
+    }
 
-    bonuses.aggregate([
+    for (const set of await bonuses.aggregate([
         { $match: { [field]: { $exists: false } } },
         { $group: { _id: '$set.name' } },
-    ]).forEach(set => {
+    ]).toArray()) {
         console.log(set._id);
-    });
+    }
 }
