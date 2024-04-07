@@ -5,7 +5,7 @@ import listSetsWithoutField from './list-sets-without-field.js';
 import printMostReadBonuses from './print-most-read-bonuses.js';
 import printMostReadTossups from './print-most-read-tossups.js';
 
-export default {
+export {
     listAlternateSubcategories,
     listQuestionsWithoutSubcategory,
     listSetsWithAnswerFormatting,
