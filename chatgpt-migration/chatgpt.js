@@ -42,11 +42,17 @@ async function classify(text) {
 
     if (subsubcategories[subcategory]) {
         alternate_subcategory = await classifyCategory(text, subsubcategories[subcategory]);
+        if (!subsubcategories[subcategory].includes(alternate_subcategory)) {
+            throw new Error(`Invalid subsubcategory ${alternate_subcategory} for subcategory ${subcategory}`);
+        }
         return { category, subcategory, alternate_subcategory };
     }
 
     if (alternate_subcategories[category]) {
         alternate_subcategory = await classifyCategory(text, alternate_subcategories[category]);
+        if (!alternate_subcategories[category].includes(alternate_subcategory)) {
+            throw new Error(`Invalid alternate subcategory ${alternate_subcategory} for category ${category}`);
+        }
         return { category, subcategory, alternate_subcategory };
     }
 
