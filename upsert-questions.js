@@ -21,6 +21,20 @@ const accountInfo = client.db('account-info');
 const tossupData = accountInfo.collection('tossup-data');
 const bonusData = accountInfo.collection('bonus-data');
 
+
+function sanitizeString(string) {
+    return string
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[\u2010-\u2015]/g, '-')
+        .replace(/[\u2018-\u201B]/g, '\'')
+        .replace(/[\u201C-\u201F]/g, '"')
+        .replace(/[\u2026]/g, '...')
+        .replace(/[\u2032-\u2037]/g, '\'')
+        .replace(/[\u00B7\u22C5\u2027]/g, '') // interpuncts
+        .replace(/\u0142/g, 'l'); // ł -> l
+}
+
 /**
  * Upload a packet without deleting existing `_id` references.
  * Creates new packets _as needed_.
@@ -41,19 +55,20 @@ async function upsertPacket({ setName, packetName, packetNumber, folderPath = '.
     const set = await sets.findOne({ name: setName });
     const packet = await packets.findOne({ 'set._id': set._id, number: packetNumber });
 
-    let packet_id = new ObjectId();
-
     if (shiftPacketNumbers) {
         console.log(await tossups.updateMany({ set_id: set._id, packetNumber: { $gte: packetNumber } }, { $inc: { packetNumber: 1 } }));
         console.log(await bonuses.updateMany({ set_id: set._id, packetNumber: { $gte: packetNumber } }, { $inc: { packetNumber: 1 } }));
         console.log(await packets.updateMany({ 'set._id': set._id, number: { $gte: packetNumber } }, { $inc: { number: 1 } }));
     } else if (packet) {
         packetAlreadyExists = true;
-        packet_id = packet._id;
     }
+
+    const packet_id = packetAlreadyExists ? packet._id : new ObjectId();
 
     if (packetAlreadyExists) {
         await packets.updateOne({ _id: packet_id }, { $set: { name: packetName } });
+        await tossups.updateMany({ 'packet._id': packet_id }, { $set: { 'packet.name': packetName } });
+        await bonuses.updateMany({ 'packet._id': packet_id }, { $set: { 'packet.name': packetName } });
     } else {
         await packets.insertOne({ _id: packet_id, name: packetName, number: packetNumber, set: { _id: set._id, name: setName } });
     }
@@ -61,32 +76,20 @@ async function upsertPacket({ setName, packetName, packetNumber, folderPath = '.
     const tossupCount = await tossups.countDocuments({ packet_id: packet_id });
 
     data.tossups.forEach(async (tossup, index) => {
-        tossup.question = tossup.question
-            .replace(/\t/g, ' ')
-            .replace(/ {2,}/g, ' ')
-            .trim();
-
-        tossup.answer = tossup.answer
-            .replace(/\t/g, ' ')
-            .replace(/ {2,}/g, ' ')
-            .trim();
-
-        if (tossup.formatted_answer) {
-            tossup.formatted_answer = tossup.formatted_answer
-                .replace(/\t/g, ' ')
-                .replace(/ {2,}/g, ' ')
-                .trim();
-        }
+        tossup.question = tossup.question.replace(/ {2,}/g, ' ');
+        tossup.question_sanitized = sanitizeString(tossup.question_sanitized.replace(/ {2,}/g, ' '));
+        tossup.answer = tossup.answer.replace(/ {2,}/g, ' ');
+        tossup.answer_sanitized = sanitizeString(tossup.answer_sanitized.replace(/ {2,}/g, ' '));
 
         const updateDoc = {
             $set: {
                 question: tossup.question,
+                question_sanitized: tossup.question_sanitized,
                 answer: tossup.answer,
-                formatted_answer: tossup.formatted_answer,
+                answer_sanitized: tossup.answer_sanitized,
                 updatedAt: new Date(),
                 category: tossup.category,
                 subcategory: tossup.subcategory,
-                packetName: packetName,
             },
             $unset: {
                 reports: '',
@@ -98,19 +101,23 @@ async function upsertPacket({ setName, packetName, packetNumber, folderPath = '.
         }
 
         if (index < tossupCount && packetAlreadyExists) {
-            const { _id } = await tossups.findOneAndUpdate({ packet_id: packet_id, number: index + 1 }, updateDoc);
-            await tossupData.updateMany({ tossup_id: _id }, { $set: { category: tossup.category, subcategory: tossup.subcategory } });
+            const { _id } = await tossups.findOneAndUpdate({ 'packet._id': packet_id, number: index + 1 }, updateDoc);
+            if (tossup.alternate_subcategory) {
+                await tossupData.updateMany(
+                    { tossup_id: _id },
+                    { $set: { category: tossup.category, subcategory: tossup.subcategory, alternate_subcategory: tossup.alternate_subcategory } },
+                );
+            } else {
+                await tossupData.updateMany(
+                    { tossup_id: _id },
+                    { $set: { category: tossup.category, subcategory: tossup.subcategory } },
+                );
+            }
         } else {
             tossupBulk.insert({
-                packet_id: packet_id,
-                questionNumber: index + 1,
+                ...updateDoc.$set,
                 number: index + 1,
-                set_id: set._id,
-                type: 'tossup',
                 createdAt: new Date(),
-                packetNumber: packetNumber,
-                setName: setName,
-                setYear: set.year,
                 difficulty: set.difficulty,
                 packet: {
                     _id: packet_id,
@@ -123,7 +130,6 @@ async function upsertPacket({ setName, packetName, packetNumber, folderPath = '.
                     year: set.year,
                     standard: set.standard,
                 },
-                ...updateDoc.$set,
             });
         }
     });
@@ -131,37 +137,30 @@ async function upsertPacket({ setName, packetName, packetNumber, folderPath = '.
     const bonusCount = await bonuses.countDocuments({ packet_id: packet_id });
 
     data.bonuses.forEach(async (bonus, index) => {
+        bonus.leadin = bonus.leadin.replace(/ {2,}/g, ' ');
+        bonus.leadin_sanitized = sanitizeString(bonus.leadin_sanitized.replace(/ {2,}/g, ' '));
+
         for (let i = 0; i < bonus.parts.length; i++) {
-            bonus.parts[i] = bonus.parts[i]
-                .replace(/\t/g, ' ')
-                .replace(/ {2,}/g, ' ')
-                .trim();
+            bonus.parts[i] = bonus.parts[i].replace(/ {2,}/g, ' ');
+            bonus.parts_sanitized[i] = sanitizeString(bonus.parts_sanitized[i].replace(/ {2,}/g, ' '));
         }
 
         for (let i = 0; i < bonus.answers.length; i++) {
-            bonus.answers[i] = bonus.answers[i]
-                .replace(/\t/g, ' ')
-                .replace(/ {2,}/g, ' ')
-                .trim();
-        }
-
-        for (let i = 0; i < bonus?.formatted_answers.length ?? 0; i++) {
-            bonus.formatted_answers[i] = bonus.formatted_answers[i]
-                .replace(/\t/g, ' ')
-                .replace(/ {2,}/g, ' ')
-                .trim();
+            bonus.answers[i] = bonus.answers[i].replace(/ {2,}/g, ' ');
+            bonus.answers_sanitized[i] = sanitizeString(bonus.answers_sanitized[i].replace(/ {2,}/g, ' '));
         }
 
         const updateDoc = {
             $set: {
                 leadin: bonus.leadin,
+                leadin_sanitized: bonus.leadin_sanitized,
                 parts: bonus.parts,
+                parts_sanitized: bonus.parts_sanitized,
                 answers: bonus.answers,
-                formatted_answers: bonus.formatted_answers,
+                answers_sanitized: bonus.answers_sanitized,
                 updatedAt: new Date(),
                 category: bonus.category,
                 subcategory: bonus.subcategory,
-                packetName: packetName,
             },
             $unset: {
                 reports: '',
@@ -176,24 +175,28 @@ async function upsertPacket({ setName, packetName, packetNumber, folderPath = '.
             updateDoc.$set.values = bonus.values;
         }
 
-        if (bonus.difficulties) {
-            updateDoc.$set.difficulties = bonus.difficulties;
+        if (bonus.difficultyModifiers) {
+            updateDoc.$set.difficultyModifiers = bonus.difficultyModifiers;
         }
 
         if (index < bonusCount && packetAlreadyExists) {
             const { _id } = await bonuses.findOneAndUpdate({ packet_id: packet_id, number: index + 1 }, updateDoc);
-            await bonusData.updateMany({ bonus_id: _id }, { $set: { category: bonus.category, subcategory: bonus.subcategory } });
+            if (bonus.alternate_subcategory) {
+                await bonusData.updateMany(
+                    { bonus_id: _id },
+                    { $set: { category: bonus.category, subcategory: bonus.subcategory, alternate_subcategory: bonus.alternate_subcategory } },
+                );
+            } else {
+                await bonusData.updateMany(
+                    { bonus_id: _id },
+                    { $set: { category: bonus.category, subcategory: bonus.subcategory } },
+                );
+            }
         } else {
             bonusBulk.insert({
-                packet_id: packet_id,
-                questionNumber: index + 1,
+                ...updateDoc.$set,
                 number: index + 1,
-                set_id: set._id,
-                type: 'bonus',
                 createdAt: new Date(),
-                packetNumber: packetNumber,
-                setName: setName,
-                setYear: set.year,
                 difficulty: set.difficulty,
                 packet: {
                     _id: packet_id,
@@ -206,7 +209,6 @@ async function upsertPacket({ setName, packetName, packetNumber, folderPath = '.
                     year: set.year,
                     standard: set.standard,
                 },
-                ...updateDoc.$set,
             });
         }
     });
