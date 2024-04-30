@@ -42,10 +42,11 @@ function sanitizeString(string) {
  * @param {string} params.setName
  * @param {string} params.packetName
  * @param {number} params.packetNumber
+ * @param {boolean} params.zeroIndexQuestions - whether question numbering starts at 0 or 1. Defaults to 1.
  * @param {string} params.folderPath - the folder that the packet is in. Defaults to the current directory.
  * @param {boolean} params.shiftPacketNumbers - whether to shift the packet numbers of existing packets. Defaults to `false`.
  */
-async function upsertPacket({ setName, packetName, packetNumber, folderPath = './', shiftPacketNumbers = false }) {
+async function upsertPacket({ setName, packetName, packetNumber, zeroIndexQuestions, folderPath = './', shiftPacketNumbers = false }) {
     const tossupBulk = tossups.initializeUnorderedBulkOp();
     const bonusBulk = bonuses.initializeUnorderedBulkOp();
 
@@ -76,6 +77,8 @@ async function upsertPacket({ setName, packetName, packetNumber, folderPath = '.
     const tossupCount = await tossups.countDocuments({ packet_id: packet_id });
 
     data.tossups.forEach(async (tossup, index) => {
+        const number = zeroIndexQuestions ? index : index + 1;
+
         tossup.question = tossup.question.replace(/ {2,}/g, ' ');
         tossup.question_sanitized = sanitizeString(tossup.question_sanitized.replace(/ {2,}/g, ' '));
         tossup.answer = tossup.answer.replace(/ {2,}/g, ' ');
@@ -101,7 +104,7 @@ async function upsertPacket({ setName, packetName, packetNumber, folderPath = '.
         }
 
         if (index < tossupCount && packetAlreadyExists) {
-            const { _id } = await tossups.findOneAndUpdate({ 'packet._id': packet_id, number: index + 1 }, updateDoc);
+            const { _id } = await tossups.findOneAndUpdate({ 'packet._id': packet_id, number: number }, updateDoc);
             if (tossup.alternate_subcategory) {
                 await tossupData.updateMany(
                     { tossup_id: _id },
@@ -116,7 +119,7 @@ async function upsertPacket({ setName, packetName, packetNumber, folderPath = '.
         } else {
             tossupBulk.insert({
                 ...updateDoc.$set,
-                number: index + 1,
+                number: number,
                 createdAt: new Date(),
                 difficulty: set.difficulty,
                 packet: {
@@ -137,6 +140,8 @@ async function upsertPacket({ setName, packetName, packetNumber, folderPath = '.
     const bonusCount = await bonuses.countDocuments({ packet_id: packet_id });
 
     data.bonuses.forEach(async (bonus, index) => {
+        const number = zeroIndexQuestions ? index : index + 1;
+
         bonus.leadin = bonus.leadin.replace(/ {2,}/g, ' ');
         bonus.leadin_sanitized = sanitizeString(bonus.leadin_sanitized.replace(/ {2,}/g, ' '));
 
@@ -180,7 +185,7 @@ async function upsertPacket({ setName, packetName, packetNumber, folderPath = '.
         }
 
         if (index < bonusCount && packetAlreadyExists) {
-            const { _id } = await bonuses.findOneAndUpdate({ packet_id: packet_id, number: index + 1 }, updateDoc);
+            const { _id } = await bonuses.findOneAndUpdate({ packet_id: packet_id, number: number }, updateDoc);
             if (bonus.alternate_subcategory) {
                 await bonusData.updateMany(
                     { bonus_id: _id },
@@ -195,7 +200,7 @@ async function upsertPacket({ setName, packetName, packetNumber, folderPath = '.
         } else {
             bonusBulk.insert({
                 ...updateDoc.$set,
-                number: index + 1,
+                number: number,
                 createdAt: new Date(),
                 difficulty: set.difficulty,
                 packet: {
@@ -232,10 +237,11 @@ async function upsertPacket({ setName, packetName, packetNumber, folderPath = '.
  * @param {string} setName
  * @param {number} difficulty
  * @param {boolean} [standard=true]
+ * @param {boolean} [zeroIndexQuestions=false] - whether question numbering starts at 0 or 1. Defaults to 1.
  * @param {string} [folderPath='./'] - the folder that the set is in. Defaults to the current directory.
  * @returns {Promise<boolean>} whether the set existed before updating
  */
-async function upsertSet(setName, difficulty, standard = true, folderPath = './') {
+async function upsertSet(setName, difficulty, standard = true, zeroIndexQuestions = false, folderPath = './') {
     let setAlreadyExists = await sets.countDocuments({ name: setName });
     setAlreadyExists = !!setAlreadyExists;
 
@@ -255,7 +261,7 @@ async function upsertSet(setName, difficulty, standard = true, folderPath = './'
         const packetName = fileName.slice(0, -5);
         packetNumber++;
 
-        await upsertPacket({ setName: setName, packetName: packetName, packetNumber: packetNumber, folderPath: `${folderPath}/${setName}` });
+        await upsertPacket({ setName, packetName, packetNumber, zeroIndexQuestions, folderPath: `${folderPath}/${setName}` });
         console.log(`Uploaded ${setName} Packet ${packetName}`);
     }
 
