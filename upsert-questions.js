@@ -57,8 +57,8 @@ async function upsertPacket({ setName, packetName, packetNumber, zeroIndexQuesti
     const packet = await packets.findOne({ 'set._id': set._id, number: packetNumber });
 
     if (shiftPacketNumbers) {
-        console.log(await tossups.updateMany({ set_id: set._id, packetNumber: { $gte: packetNumber } }, { $inc: { packetNumber: 1 } }));
-        console.log(await bonuses.updateMany({ set_id: set._id, packetNumber: { $gte: packetNumber } }, { $inc: { packetNumber: 1 } }));
+        console.log(await tossups.updateMany({ 'set._id': set._id, packetNumber: { $gte: packetNumber } }, { $inc: { packetNumber: 1 } }));
+        console.log(await bonuses.updateMany({ 'set._id': set._id, packetNumber: { $gte: packetNumber } }, { $inc: { packetNumber: 1 } }));
         console.log(await packets.updateMany({ 'set._id': set._id, number: { $gte: packetNumber } }, { $inc: { number: 1 } }));
     } else if (packet) {
         packetAlreadyExists = true;
@@ -74,7 +74,7 @@ async function upsertPacket({ setName, packetName, packetNumber, zeroIndexQuesti
         await packets.insertOne({ _id: packet_id, name: packetName, number: packetNumber, set: { _id: set._id, name: setName } });
     }
 
-    const tossupCount = await tossups.countDocuments({ packet_id: packet_id });
+    const tossupCount = await tossups.countDocuments({ 'packet._id': packet_id });
 
     data.tossups.forEach(async (tossup, index) => {
         const number = zeroIndexQuestions ? index : index + 1;
@@ -104,6 +104,7 @@ async function upsertPacket({ setName, packetName, packetNumber, zeroIndexQuesti
         }
 
         if (index < tossupCount && packetAlreadyExists) {
+            updateDoc.$set['packet.name'] = packetName;
             const { _id } = await tossups.findOneAndUpdate({ 'packet._id': packet_id, number: number }, updateDoc);
             if (tossup.alternate_subcategory) {
                 await tossupData.updateMany(
@@ -137,7 +138,7 @@ async function upsertPacket({ setName, packetName, packetNumber, zeroIndexQuesti
         }
     });
 
-    const bonusCount = await bonuses.countDocuments({ packet_id: packet_id });
+    const bonusCount = await bonuses.countDocuments({ 'packet._id': packet_id });
 
     data.bonuses.forEach(async (bonus, index) => {
         const number = zeroIndexQuestions ? index : index + 1;
@@ -185,7 +186,8 @@ async function upsertPacket({ setName, packetName, packetNumber, zeroIndexQuesti
         }
 
         if (index < bonusCount && packetAlreadyExists) {
-            const { _id } = await bonuses.findOneAndUpdate({ packet_id: packet_id, number: number }, updateDoc);
+            updateDoc.$set['packet.name'] = packetName;
+            const { _id } = await bonuses.findOneAndUpdate({ 'packet._id': packet_id, number: number }, updateDoc);
             if (bonus.alternate_subcategory) {
                 await bonusData.updateMany(
                     { bonus_id: _id },
