@@ -3,6 +3,10 @@ import { sets, tossups, bonuses, packets, tossupData, bonusData } from '../colle
 
 export default async function deleteSet(setName) {
     const result = await sets.findOneAndDelete({ name: setName });
+    if (!result.value) {
+        console.log('Set not found');
+        return;
+    }
     const { _id } = result.value;
 
     console.log(await tossups.deleteMany({ 'set._id': _id }));
