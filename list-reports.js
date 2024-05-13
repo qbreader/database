@@ -25,10 +25,7 @@ const reportReasons = [ 'wrong-category', 'text-error', 'answer-checking', 'othe
 
 async function listReports({ bashHighlighting = true, allowedReasons = reportReasons } = {}) {
     await tossups.aggregate([
-        { $match: {
-            formatted_answer: { $exists: true },
-            'reports.reason': { $in: allowedReasons },
-        } },
+        { $match: { 'reports.reason': { $in: allowedReasons } } },
         { $sort: { setName: 1, reports: 1 } },
     ]).forEach(async question => {
         console.log(tossupToString(question, bashHighlighting));
@@ -41,10 +38,7 @@ async function listReports({ bashHighlighting = true, allowedReasons = reportRea
     });
 
     await bonuses.aggregate([
-        { $match: {
-            formatted_answers: { $exists: true },
-            'reports.reason': { $in: allowedReasons },
-        } },
+        { $match: { 'reports.reason': { $in: allowedReasons } } },
         { $sort: { setName: 1, reports: 1 } },
     ]).forEach(async question => {
         console.log(bonusToString(question, bashHighlighting));

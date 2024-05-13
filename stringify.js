@@ -4,9 +4,7 @@ import * as bcolors from './bcolors.js';
 function tossupToString(question, bashHighlighting = true) {
     let string = '';
 
-    question.answer = question?.formatted_answer ?? question.answer;
-
-    string += `${bashHighlighting ? bcolors.OKCYAN : ''}${question.setName}${bcolors.ENDC} Packet ${question.packetNumber} Question ${question.questionNumber}\n`;
+    string += `${bashHighlighting ? bcolors.OKCYAN : ''}${question.set.name}${bcolors.ENDC} Packet ${question.packet.number} Question ${question.number}\n`;
     string += `Question ID: ${bashHighlighting ? bcolors.OKBLUE : ''}${question._id}${bashHighlighting ? bcolors.ENDC : ''}\n`;
 
     question.answer = question.answer
@@ -27,9 +25,7 @@ function tossupToString(question, bashHighlighting = true) {
 function bonusToString(question, bashHighlighting = true) {
     let string = '';
 
-    question.answers = question?.formatted_answers ?? question.answers;
-
-    string += `${bashHighlighting ? bcolors.OKCYAN : ''}${question.setName}${bcolors.ENDC} Packet ${question.packetNumber} Question ${question.questionNumber}\n`;
+    string += `${bashHighlighting ? bcolors.OKCYAN : ''}${question.set.name}${bcolors.ENDC} Packet ${question.packet.number} Question ${question.number}\n`;
     string += `Question ID: ${bashHighlighting ? bcolors.OKBLUE : ''}${question._id}${bashHighlighting ? bcolors.ENDC : ''}\n`;
 
     for (let i = 0; i < question.answers.length; i++) {
