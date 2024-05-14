@@ -109,12 +109,12 @@ async function upsertPacket({ setName, packetName, packetNumber, zeroIndexQuesti
             if (tossup.alternate_subcategory) {
                 await tossupData.updateMany(
                     { tossup_id: _id },
-                    { $set: { category: tossup.category, subcategory: tossup.subcategory, alternate_subcategory: tossup.alternate_subcategory } },
+                    { $set: { difficulty: set.difficulty, category: tossup.category, subcategory: tossup.subcategory, alternate_subcategory: tossup.alternate_subcategory } },
                 );
             } else {
                 await tossupData.updateMany(
                     { tossup_id: _id },
-                    { $set: { category: tossup.category, subcategory: tossup.subcategory } },
+                    { $set: { difficulty: set.difficulty, category: tossup.category, subcategory: tossup.subcategory } },
                 );
             }
         } else {
@@ -191,12 +191,12 @@ async function upsertPacket({ setName, packetName, packetNumber, zeroIndexQuesti
             if (bonus.alternate_subcategory) {
                 await bonusData.updateMany(
                     { bonus_id: _id },
-                    { $set: { category: bonus.category, subcategory: bonus.subcategory, alternate_subcategory: bonus.alternate_subcategory } },
+                    { $set: { difficulty: set.difficulty, category: bonus.category, subcategory: bonus.subcategory, alternate_subcategory: bonus.alternate_subcategory } },
                 );
             } else {
                 await bonusData.updateMany(
                     { bonus_id: _id },
-                    { $set: { category: bonus.category, subcategory: bonus.subcategory } },
+                    { $set: { difficulty: set.difficulty, category: bonus.category, subcategory: bonus.subcategory } },
                 );
             }
         } else {
