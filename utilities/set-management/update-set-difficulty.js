@@ -8,15 +8,15 @@ export default async function updateSetDifficulty(setName, difficulty) {
     );
     const { _id } = result.value;
 
-    await tossupData.updateMany(
+    console.log(await tossupData.updateMany(
         { set_id: _id },
         { $set: { difficulty: difficulty } },
-    );
+    ));
 
-    await bonusData.updateMany(
+    console.log(await bonusData.updateMany(
         { set_id: _id },
         { $set: { difficulty: difficulty } },
-    );
+    ));
 
     console.log(await tossups.updateMany(
         { 'set._id': _id },
