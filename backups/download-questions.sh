@@ -7,9 +7,10 @@
 # defined as bash variables (a standard .env file should do the trick)
 source .env
 mongodump --uri="mongodb+srv://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@qbreader.0i7oej9.mongodb.net/?retryWrites=true&w=majority" -d qbreader
-mv dump/qbreader $(date +%Y-%m-%d_%H:%M:%S)
+current_date=$(date +%Y-%m-%d_%H:%M:%S)
+mv dump/qbreader $current_date
 rm -r dump
-cd $(date +%Y-%m-%d_%H:%M:%S)
+cd $current_date
 bsondump --outFile=tossups.json tossups.bson
 bsondump --outFile=bonuses.json bonuses.bson
 bsondump --outFile=packets.json packets.bson
