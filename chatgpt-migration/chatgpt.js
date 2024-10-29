@@ -23,7 +23,7 @@ async function classifyCategory(text, categories) {
     const content = `Classify the following text as one of ${categories}. Your response should consist of one of the categories and nothing else. ${text}`;
 
     const stream = await openai.chat.completions.create({
-        model: 'gpt-3.5-turbo-1106',
+        model: 'gpt-4o-mini',
         messages: [{ role: 'user', content: content }],
         stream: false,
         n: 1,
@@ -60,13 +60,18 @@ async function classify(text) {
 }
 
 for (const [filename, lines] of [
-    // ['output-tossup.txt', readFileSync('tossup-log.txt', 'utf-8').split('\n')],
-    // ['output-bonus.txt', readFileSync('bonus-log.txt', 'utf-8').split('\n')],
+    ['output-tossup.txt', readFileSync('tossup-log.txt', 'utf-8').split('\n')],
+    ['output-bonus.txt', readFileSync('bonus-log.txt', 'utf-8').split('\n')],
 ]) {
     for (const line of lines) {
-        const { _id, text } = JSON.parse(line);
-        const classification = await classify(text);
-        classification._id = _id;
-        writeFileSync(filename, JSON.stringify(classification) + '\n', { flag: 'a' });
+        try {
+            const { _id, text } = JSON.parse(line);
+            const classification = await classify(text);
+            classification._id = _id;
+            writeFileSync(filename, JSON.stringify(classification) + '\n', { flag: 'a' });
+        } catch (e) {
+            console.error(e);
+            continue;
+        }
     }
 }

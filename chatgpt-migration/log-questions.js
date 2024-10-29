@@ -36,7 +36,7 @@ async function logQuestions(filter, tossupFilename='tossup-log.txt', bonusFilena
     await tossups.find(filter).forEach(tossup => {
         writeFileSync(
             tossupFilename,
-            JSON.stringify({ _id: tossup._id, text: tossup.question + ' ' + tossup.answer }) + '\n',
+            JSON.stringify({ _id: tossup._id, text: tossup.question_sanitized + ' ' + tossup.answer_sanitized }) + '\n',
             { flag: 'a' },
         );
     });
