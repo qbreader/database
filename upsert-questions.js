@@ -57,8 +57,8 @@ async function upsertPacket({ setName, packetName, packetNumber, zeroIndexQuesti
     const packet = await packets.findOne({ 'set._id': set._id, number: packetNumber });
 
     if (shiftPacketNumbers) {
-        console.log(await tossups.updateMany({ 'set._id': set._id, packetNumber: { $gte: packetNumber } }, { $inc: { packetNumber: 1 } }));
-        console.log(await bonuses.updateMany({ 'set._id': set._id, packetNumber: { $gte: packetNumber } }, { $inc: { packetNumber: 1 } }));
+        console.log(await tossups.updateMany({ 'set._id': set._id, 'packet.number': { $gte: packetNumber } }, { $inc: { 'packet.number': 1 } }));
+        console.log(await bonuses.updateMany({ 'set._id': set._id, 'packet.number': { $gte: packetNumber } }, { $inc: { 'packet.number': 1 } }));
         console.log(await packets.updateMany({ 'set._id': set._id, number: { $gte: packetNumber } }, { $inc: { number: 1 } }));
     } else if (packet) {
         packetAlreadyExists = true;
