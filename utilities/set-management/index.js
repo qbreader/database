@@ -6,10 +6,10 @@ import updateSetDifficulty from './update-set-difficulty.js';
 import updateSetStandardness from './update-set-standardness.js';
 
 export {
-    deleteSet,
-    renamePacket,
-    renameSet,
-    updatePacketNumber,
-    updateSetDifficulty,
-    updateSetStandardness,
+  deleteSet,
+  renamePacket,
+  renameSet,
+  updatePacketNumber,
+  updateSetDifficulty,
+  updateSetStandardness
 };

@@ -7,11 +7,11 @@ import sanitizeLeadin from './sanitize-leadin.js';
 import sanitizeQuestions from './sanitize-questions.js';
 
 export {
-    fixAcceptEither,
-    fixLeadinBonus,
-    fixLeadingColons,
-    fixSpaces,
-    removeTrailingBonusesString,
-    sanitizeLeadin,
-    sanitizeQuestions,
+  fixAcceptEither,
+  fixLeadinBonus,
+  fixLeadingColons,
+  fixSpaces,
+  removeTrailingBonusesString,
+  sanitizeLeadin,
+  sanitizeQuestions
 };

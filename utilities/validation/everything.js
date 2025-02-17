@@ -6,17 +6,16 @@ import packetValidation from './packets.js';
 import setValidation from './sets.js';
 import subcategoryValidation from './subcategory.js';
 
+export default async function everythingValidation (verbose = true) {
+  let total = 0;
 
-export default async function everythingValidation(verbose = true) {
-    let total = 0;
+  total += await alternateSubcategoryValidation(verbose);
+  total += await categoryValidation(verbose);
+  total += await subcategoryValidation(verbose);
 
-    total += await alternateSubcategoryValidation(verbose);
-    total += await categoryValidation(verbose);
-    total += await subcategoryValidation(verbose);
+  total += await bonusesValidation(verbose);
+  total += await packetValidation(verbose);
+  total += await setValidation(verbose);
 
-    total += await bonusesValidation(verbose);
-    total += await packetValidation(verbose);
-    total += await setValidation(verbose);
-
-    return total;
+  return total;
 }

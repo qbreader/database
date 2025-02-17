@@ -15,24 +15,24 @@ const cats = require('../../subcat-to-cat.json');
  * @returns {Promise<UpdateResult>}
  */
 
-export default async function updateAlternateSubcategory(_id, type, alternate_subcategory, clearReports = true) {
-    if (typeof _id === 'string') {
-        _id = new ObjectId(_id);
-    }
+export default async function updateAlternateSubcategory (_id, type, alternate_subcategory, clearReports = true) {
+  if (typeof _id === 'string') {
+    _id = new ObjectId(_id);
+  }
 
-    const updateDoc = {
-        $set: { alternate_subcategory: alternate_subcategory, updatedAt: new Date() },
-        $unset: {},
-    };
+  const updateDoc = {
+    $set: { alternate_subcategory, updatedAt: new Date() },
+    $unset: {}
+  };
 
-    if (clearReports) {
-        updateDoc['$unset']['reports'] = 1;
-    }
+  if (clearReports) {
+    updateDoc.$unset.reports = 1;
+  }
 
-    switch (type) {
+  switch (type) {
     case 'tossup':
-        return await tossups.updateOne({ _id: _id }, updateDoc);
+      return await tossups.updateOne({ _id }, updateDoc);
     case 'bonus':
-        return await bonuses.updateOne({ _id: ObjectId(_id) }, updateDoc);
-    }
+      return await bonuses.updateOne({ _id: ObjectId(_id) }, updateDoc);
+  }
 }

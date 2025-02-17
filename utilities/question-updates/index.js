@@ -8,12 +8,12 @@ import updateManySubcategories from './update-many-subcategories.js';
 import updateSubcategory from './update-subcategory.js';
 
 export {
-    addUnformattedFields,
-    boldPowermarks,
-    clearReports,
-    deleteDeprecatedFields,
-    standardizeSubcategories,
-    updateAlternateSubcategory,
-    updateManySubcategories,
-    updateSubcategory,
+  addUnformattedFields,
+  boldPowermarks,
+  clearReports,
+  deleteDeprecatedFields,
+  standardizeSubcategories,
+  updateAlternateSubcategory,
+  updateManySubcategories,
+  updateSubcategory
 };

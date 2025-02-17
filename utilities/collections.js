@@ -22,5 +22,5 @@ export const bonusStars = accountInfo.collection('bonus-stars');
 export const users = accountInfo.collection('users');
 
 export const closeConnection = async () => {
-    await client.close();
+  await client.close();
 };

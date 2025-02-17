@@ -8,12 +8,12 @@ import setValidation from './sets.js';
 import subcategoryValidation from './subcategory.js';
 
 export {
-    alternateSubcategoryValidation,
-    bonusesValidation,
-    categoryValidation,
-    deprecatedFieldsValidation,
-    everythingValidation,
-    packetValidation,
-    setValidation,
-    subcategoryValidation,
+  alternateSubcategoryValidation,
+  bonusesValidation,
+  categoryValidation,
+  deprecatedFieldsValidation,
+  everythingValidation,
+  packetValidation,
+  setValidation,
+  subcategoryValidation
 };

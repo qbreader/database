@@ -8,22 +8,21 @@ import { readFileSync } from 'fs';
  * @param {String} filename the file from which to read in data for the categories
  */
 
-export default async function updateManySubcategories(filename = 'input.txt') {
-    const data = readFileSync(filename, { encoding: 'utf-8' });
+export default async function updateManySubcategories (filename = 'input.txt') {
+  const data = readFileSync(filename, { encoding: 'utf-8' });
 
-    let counter = 0;
+  let counter = 0;
 
-    for (const line of data.split('\n')) {
-        if (line === '')
-            continue;
+  for (const line of data.split('\n')) {
+    if (line === '') { continue; }
 
-        const { _id, subcategory, type } = JSON.parse(line);
-        const result = await updateSubcategory(_id, type, subcategory, false);
+    const { _id, subcategory, type } = JSON.parse(line);
+    const result = await updateSubcategory(_id, type, subcategory, false);
 
-        counter++;
-        if (counter % 100 == 0) {
-            console.log(counter);
-            console.log(result);
-        }
+    counter++;
+    if (counter % 100 == 0) {
+      console.log(counter);
+      console.log(result);
     }
+  }
 }

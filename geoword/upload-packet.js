@@ -20,31 +20,31 @@ const tossupCollection = database.collection('tossups');
  * @param {string} division
  * @param {string} [packetDirectory='./']
  */
-async function uploadDivision(packetName, packet_id, division, packetDirectory = './') {
-    const data = JSON.parse(fs.readFileSync(`${packetDirectory}/${packetName}/${division}.json`));
-    const { tossups } = data;
+async function uploadDivision (packetName, packet_id, division, packetDirectory = './') {
+  const data = JSON.parse(fs.readFileSync(`${packetDirectory}/${packetName}/${division}.json`));
+  const { tossups } = data;
 
-    await tossupCollection.deleteMany({ packetName, division });
+  await tossupCollection.deleteMany({ packetName, division });
 
-    for (let index = 0; index < tossups.length; index++) {
-        const tossup = tossups[index];
+  for (let index = 0; index < tossups.length; index++) {
+    const tossup = tossups[index];
 
-        tossup.question = tossup.question.replace(/\t/g, ' ').replace(/ {2,}/g, ' ').trim();
-        tossup.answer = tossup.answer.replace(/\t/g, ' ').replace(/ {2,}/g, ' ').trim();
+    tossup.question = tossup.question.replace(/\t/g, ' ').replace(/ {2,}/g, ' ').trim();
+    tossup.answer = tossup.answer.replace(/\t/g, ' ').replace(/ {2,}/g, ' ').trim();
 
-        if (tossup.formatted_answer) {
-            tossup.formatted_answer = tossup.formatted_answer.replace(/\t/g, ' ').replace(/ {2,}/g, ' ').trim();
-        }
-
-        tossup.division = tossup.division || division;
-        tossup.packet = {
-            name: packetName,
-            _id: packet_id,
-        };
-        tossup.questionNumber = tossup.questionNumber || (index + 1);
+    if (tossup.formatted_answer) {
+      tossup.formatted_answer = tossup.formatted_answer.replace(/\t/g, ' ').replace(/ {2,}/g, ' ').trim();
     }
 
-    console.log(await tossupCollection.insertMany(tossups));
+    tossup.division = tossup.division || division;
+    tossup.packet = {
+      name: packetName,
+      _id: packet_id
+    };
+    tossup.questionNumber = tossup.questionNumber || (index + 1);
+  }
+
+  console.log(await tossupCollection.insertMany(tossups));
 }
 
 /**
@@ -55,20 +55,20 @@ async function uploadDivision(packetName, packet_id, division, packetDirectory =
  * @param {number} [costInCents=250]
  * @param {*} [packetDirectory='./']
  */
-async function uploadPacket(packetName, costInCents = 250, packetDirectory = './') {
-    const divisions = fs.readdirSync(`${packetDirectory}/${packetName}`).map(division => division.replace('.json', ''));
-    console.log('uploading packet', packetName, 'with divisions', divisions);
-    const packet_id = new ObjectId();
+async function uploadPacket (packetName, costInCents = 250, packetDirectory = './') {
+  const divisions = fs.readdirSync(`${packetDirectory}/${packetName}`).map(division => division.replace('.json', ''));
+  console.log('uploading packet', packetName, 'with divisions', divisions);
+  const packet_id = new ObjectId();
 
-    for (const division of divisions) {
-        await uploadDivision(packetName, packet_id, division, packetDirectory);
-    }
+  for (const division of divisions) {
+    await uploadDivision(packetName, packet_id, division, packetDirectory);
+  }
 
-    console.log(await packets.replaceOne(
-        { name: packetName, divisions },
-        { _id: packet_id, name: packetName, divisions, test: true, active: false, costInCents },
-        { upsert: true },
-    ));
+  console.log(await packets.replaceOne(
+    { name: packetName, divisions },
+    { _id: packet_id, name: packetName, divisions, test: true, active: false, costInCents },
+    { upsert: true }
+  ));
 }
 
 export default uploadPacket;

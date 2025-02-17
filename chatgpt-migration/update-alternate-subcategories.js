@@ -15,6 +15,6 @@ console.log('connected to mongodb');
 const lines = readFileSync('output-bonus.txt', 'utf-8').split('\n');
 
 for (const line of lines) {
-    const question = JSON.parse(line);
-    await qu.updateSubcategory(new ObjectId(question._id), 'bonus', question.subcategory, question.alternate_subcategory);
+  const question = JSON.parse(line);
+  await qu.updateSubcategory(new ObjectId(question._id), 'bonus', question.subcategory, question.alternate_subcategory);
 }

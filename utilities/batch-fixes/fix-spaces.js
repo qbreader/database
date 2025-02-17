@@ -1,85 +1,84 @@
 import { tossups, bonuses } from '../collections.js';
 
+export default async function fixSpaces () {
+  const fields = ['question', 'answer', 'formatted_answer', 'leadin'];
+  const arrayFields = ['parts', 'answers', 'formatted_answers'];
 
-export default async function fixSpaces() {
-    const fields = ['question', 'answer', 'formatted_answer', 'leadin'];
-    const arrayFields = ['parts', 'answers', 'formatted_answers'];
+  for (const field of fields) {
+    console.log(field, await tossups.countDocuments({ [field]: /\t|^ | $| {2,}/ }));
+    console.log(field, await bonuses.countDocuments({ [field]: /\t|^ | $| {2,}/ }));
+  }
 
-    for (const field of fields) {
-        console.log(field, await tossups.countDocuments({ [field]: /\t|^ | $| {2,}/ }));
-        console.log(field, await bonuses.countDocuments({ [field]: /\t|^ | $| {2,}/ }));
-    }
+  for (const field of arrayFields) {
+    console.log(field, await tossups.countDocuments({ [field]: /\t|^ | $| {2,}/ }));
+    console.log(field, await bonuses.countDocuments({ [field]: /\t|^ | $| {2,}/ }));
+  }
 
-    for (const field of arrayFields) {
-        console.log(field, await tossups.countDocuments({ [field]: /\t|^ | $| {2,}/ }));
-        console.log(field, await bonuses.countDocuments({ [field]: /\t|^ | $| {2,}/ }));
-    }
+  let counter = 0;
 
-    let counter = 0;
+  for (const field of fields) {
+    console.log('updating', field);
+    tossups.find({ [field]: /\t|^ | $| {2,}/ }).forEach(question => {
+      question[field] = question[field]
+        .replace(/\t/g, ' ')
+        .replace(/ {2,}/g, ' ')
+        .trim();
 
-    for (const field of fields) {
-        console.log('updating', field);
-        tossups.find({ [field]: /\t|^ | $| {2,}/ }).forEach(question => {
-            question[field] = question[field]
-                .replace(/\t/g, ' ')
-                .replace(/ {2,}/g, ' ')
-                .trim();
+      tossups.updateOne({ _id: question._id }, { $set: { [field]: question[field] } });
 
-            tossups.updateOne({ _id: question._id }, { $set: { [field]: question[field] } });
+      counter++;
+      if (counter % 100 === 0) {
+        console.log(counter);
+      }
+    });
 
-            counter++;
-            if (counter % 100 === 0) {
-                console.log(counter);
-            }
-        });
+    bonuses.find({ [field]: /\t|^ | $| {2,}/ }).forEach(question => {
+      question[field] = question[field]
+        .replace(/\t/g, ' ')
+        .replace(/ {2,}/g, ' ')
+        .trim();
 
-        bonuses.find({ [field]: /\t|^ | $| {2,}/ }).forEach(question => {
-            question[field] = question[field]
-                .replace(/\t/g, ' ')
-                .replace(/ {2,}/g, ' ')
-                .trim();
+      bonuses.updateOne({ _id: question._id }, { $set: { [field]: question[field] } });
 
-            bonuses.updateOne({ _id: question._id }, { $set: { [field]: question[field] } });
+      counter++;
+      if (counter % 100 === 0) {
+        console.log(counter);
+      }
+    });
+  }
 
-            counter++;
-            if (counter % 100 === 0) {
-                console.log(counter);
-            }
-        });
-    }
+  for (const field of arrayFields) {
+    console.log('updating', field);
+    tossups.find({ [field]: /\t|^ | $| {2,}/ }).forEach(question => {
+      for (let i = 0; i < question[field].length; i++) {
+        question[field][i] = question[field][i]
+          .replace(/\t/g, ' ')
+          .replace(/ {2,}/g, ' ')
+          .trim();
+      }
 
-    for (const field of arrayFields) {
-        console.log('updating', field);
-        tossups.find({ [field]: /\t|^ | $| {2,}/ }).forEach(question => {
-            for (let i = 0; i < question[field].length; i++) {
-                question[field][i] = question[field][i]
-                    .replace(/\t/g, ' ')
-                    .replace(/ {2,}/g, ' ')
-                    .trim();
-            }
+      tossups.updateOne({ _id: question._id }, { $set: { [field]: question[field] } });
 
-            tossups.updateOne({ _id: question._id }, { $set: { [field]: question[field] } });
+      counter++;
+      if (counter % 100 === 0) {
+        console.log(counter);
+      }
+    });
 
-            counter++;
-            if (counter % 100 === 0) {
-                console.log(counter);
-            }
-        });
+    bonuses.find({ [field]: /\t|^ | $| {2,}/ }).forEach(question => {
+      for (let i = 0; i < question[field].length; i++) {
+        question[field][i] = question[field][i]
+          .replace(/\t/g, ' ')
+          .replace(/ {2,}/g, ' ')
+          .trim();
+      }
 
-        bonuses.find({ [field]: /\t|^ | $| {2,}/ }).forEach(question => {
-            for (let i = 0; i < question[field].length; i++) {
-                question[field][i] = question[field][i]
-                    .replace(/\t/g, ' ')
-                    .replace(/ {2,}/g, ' ')
-                    .trim();
-            }
+      bonuses.updateOne({ _id: question._id }, { $set: { [field]: question[field] } });
 
-            bonuses.updateOne({ _id: question._id }, { $set: { [field]: question[field] } });
-
-            counter++;
-            if (counter % 100 === 0) {
-                console.log(counter);
-            }
-        });
-    }
+      counter++;
+      if (counter % 100 === 0) {
+        console.log(counter);
+      }
+    });
+  }
 }
