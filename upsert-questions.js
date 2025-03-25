@@ -212,7 +212,6 @@ async function upsertPacket ({ setName, packetName, packetNumber, zeroIndexQuest
       bonusBulk.insert({
         ...updateDoc.$set,
         number,
-        createdAt: new Date(),
         difficulty: set.difficulty,
         packet: {
           _id: packet_id,
