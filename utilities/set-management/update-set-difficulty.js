@@ -1,4 +1,4 @@
-import { sets, tossupData, bonusData, tossups, bonuses } from '../collections.js';
+import { sets, perTossupData, perBonusData, tossups, bonuses } from '../collections.js';
 
 export default async function updateSetDifficulty (setName, difficulty) {
   const result = await sets.findOneAndUpdate(
@@ -7,12 +7,12 @@ export default async function updateSetDifficulty (setName, difficulty) {
   );
   const { _id } = result.value;
 
-  console.log(await tossupData.updateMany(
+  console.log(await perTossupData.updateMany(
     { set_id: _id },
     { $set: { difficulty } }
   ));
 
-  console.log(await bonusData.updateMany(
+  console.log(await perBonusData.updateMany(
     { set_id: _id },
     { $set: { difficulty } }
   ));

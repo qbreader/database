@@ -1,4 +1,4 @@
-import { sets, tossups, bonuses, packets, tossupData, bonusData } from '../collections.js';
+import { sets, tossups, bonuses, packets, perTossupData, perBonusData } from '../collections.js';
 
 export default async function deleteSet (setName) {
   const result = await sets.findOneAndDelete({ name: setName });
@@ -11,6 +11,6 @@ export default async function deleteSet (setName) {
   console.log(await tossups.deleteMany({ 'set._id': _id }));
   console.log(await bonuses.deleteMany({ 'set._id': _id }));
   console.log(await packets.deleteMany({ 'set._id': _id }));
-  console.log(await tossupData.deleteMany({ set_id: _id }));
-  console.log(await bonusData.deleteMany({ set_id: _id }));
+  console.log(await perTossupData.deleteMany({ set_id: _id }));
+  console.log(await perBonusData.deleteMany({ set_id: _id }));
 }

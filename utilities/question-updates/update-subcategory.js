@@ -1,7 +1,6 @@
-import { tossupData, tossups, bonusData, bonuses } from '../collections.js';
+import { perTossupData, tossups, perBonusData, bonuses } from '../collections.js';
 
 import { createRequire } from 'module';
-import { ObjectId } from 'mongodb';
 
 const require = createRequire(import.meta.url);
 const cats = require('../../subcat-to-cat.json');
@@ -54,11 +53,11 @@ export default async function updateSubcategory (_id, type, subcategory, alterna
 
   switch (type) {
     case 'tossup': {
-      tossupData.updateMany({ tossup_id: _id }, dataUpdate);
+      await perTossupData.updateMany({ _id }, dataUpdate);
       return await tossups.updateOne({ _id }, questionUpdate);
     }
     case 'bonus': {
-      bonusData.updateMany({ bonus_id: _id }, dataUpdate);
+      await perBonusData.updateMany({ _id }, dataUpdate);
       return await bonuses.updateOne({ _id }, questionUpdate);
     }
   }
