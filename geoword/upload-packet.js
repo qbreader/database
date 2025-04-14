@@ -16,11 +16,11 @@ const tossupCollection = database.collection('tossups');
 /**
  *
  * @param {string} packetName
- * @param {ObjectId} packet_id
+ * @param {ObjectId} packetId
  * @param {string} division
  * @param {string} [packetDirectory='./']
  */
-async function uploadDivision (packetName, packet_id, division, packetDirectory = './') {
+async function uploadDivision (packetName, packetId, division, packetDirectory = './') {
   const data = JSON.parse(fs.readFileSync(`${packetDirectory}/${packetName}/${division}.json`));
   const { tossups } = data;
 
@@ -39,7 +39,7 @@ async function uploadDivision (packetName, packet_id, division, packetDirectory 
     tossup.division = tossup.division || division;
     tossup.packet = {
       name: packetName,
-      _id: packet_id
+      _id: packetId
     };
     tossup.questionNumber = tossup.questionNumber || (index + 1);
   }
@@ -58,15 +58,15 @@ async function uploadDivision (packetName, packet_id, division, packetDirectory 
 async function uploadPacket (packetName, costInCents = 250, packetDirectory = './') {
   const divisions = fs.readdirSync(`${packetDirectory}/${packetName}`).map(division => division.replace('.json', ''));
   console.log('uploading packet', packetName, 'with divisions', divisions);
-  const packet_id = new ObjectId();
+  const packetId = new ObjectId();
 
   for (const division of divisions) {
-    await uploadDivision(packetName, packet_id, division, packetDirectory);
+    await uploadDivision(packetName, packetId, division, packetDirectory);
   }
 
   console.log(await packets.replaceOne(
     { name: packetName, divisions },
-    { _id: packet_id, name: packetName, divisions, test: true, active: false, costInCents },
+    { _id: packetId, name: packetName, divisions, test: true, active: false, costInCents },
     { upsert: true }
   ));
 }

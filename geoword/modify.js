@@ -15,7 +15,10 @@ const buzzes = geoword.collection('buzzes');
 const divisionChoices = geoword.collection('division-choices');
 const packets = geoword.collection('packets');
 const payments = geoword.collection('payments');
+const sampleAudio = geoword.collection('sample-audio');
 const tossups = geoword.collection('tossups');
+
+await client.close();
 
 const accountInfo = client.db('account-info');
 const users = accountInfo.collection('users');
