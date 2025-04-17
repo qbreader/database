@@ -4,10 +4,8 @@ import { MongoClient, ObjectId } from 'mongodb';
 
 const uri = `mongodb+srv://${process.env.MONGODB_USERNAME || 'geoffreywu42'}:${process.env.MONGODB_PASSWORD || 'password'}@qbreader.0i7oej9.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri);
-client.connect().then(async () => {
-  console.log('connected to mongodb');
-  client.close();
-});
+await client.connect();
+console.log('connected to mongodb');
 
 const geoword = client.db('geoword');
 const audio = geoword.collection('audio');
@@ -18,22 +16,10 @@ const payments = geoword.collection('payments');
 const sampleAudio = geoword.collection('sample-audio');
 const tossups = geoword.collection('tossups');
 
-await client.close();
-
 const accountInfo = client.db('account-info');
 const users = accountInfo.collection('users');
 
-async function copyAudioIds () {
-  let counter = 0;
-  const cursor = audio.find({});
-  let audioDoc;
-  while ((audioDoc = await cursor.next())) {
-    const { tossup_id } = audioDoc;
-    await tossups.updateOne({ _id: tossup_id }, { $set: { audio_id: audioDoc._id } });
-    counter++;
-  }
-  console.log(counter);
-}
+await client.close();
 
 async function deactivateBuzzes (username, packetName) {
   const user = await users.findOne({ username });
@@ -57,49 +43,6 @@ async function deletePacket (packetName) {
   await packets.deleteOne({ name: packetName });
   await tossups.deleteMany({ 'packet.name': packetName });
   await buzzes.deleteMany({ 'packet.name': packetName });
-}
-
-async function findMissingAudio () {
-  return await tossups.aggregate([
-    {
-      $lookup: {
-        from: 'audio',
-        localField: '_id',
-        foreignField: 'tossup_id',
-        as: 'audio'
-      }
-    },
-    { $match: { audio: { $size: 0 } } }
-  ]).toArray();
-}
-
-async function getPaymentCount (packetName) {
-  return await payments.countDocuments({ 'packet.name': packetName });
-}
-
-async function manuallyAddPayment (username, packetName) {
-  const user = await users.findOne({ username });
-  const packet = await packets.findOne({ name: packetName });
-
-  if (!user || !packet) {
-    return false;
-  }
-
-  console.log(await payments.replaceOne(
-    { user_id: user._id, 'packet._id': packet._id },
-    {
-      user_id: user._id,
-      packet: {
-        _id: packet._id,
-        name: packet.name
-      },
-      createdAt: new Date(),
-      manual: true
-    },
-    { upsert: true }
-  ));
-
-  return true;
 }
 
 async function renamePacket (oldName, newName) {
