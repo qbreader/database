@@ -1,6 +1,6 @@
 import 'dotenv/config';
 
-import { categories, alternate_subcategories, subsubcategories, SUBCATEGORY_TO_CATEGORY } from './constants.js';
+import { CATEGORY_TO_ALTERNATE_SUBCATEGORY, SUBCATEGORY_TO_SUBSUBCATEGORY, SUBCATEGORY_TO_CATEGORY, SUBCATEGORIES } from './constants.js';
 
 import { readFileSync, writeFileSync } from 'fs';
 import OpenAI from 'openai';
@@ -18,6 +18,15 @@ function toTitleCase (str) {
   );
 }
 
+/**
+ * Classifies a given text into one of the specified categories using OpenAI's GPT model.
+ *
+ * @function classifyCategory
+ * @param {string} text - The text to be classified.
+ * @param {string[]} categories - An array of category names to classify the text into.
+ * @returns {Promise<string>} A promise that resolves to the classified category.
+ * @throws {Error} Throws an error if the classified category is not one of the provided categories.
+ */
 async function classifyCategory (text, categories) {
   categories = categories.map(category => `"${category}"`).join(', ');
   const content = `Classify the following text as one of ${categories}. Your response should consist of one of the categories and nothing else. ${text}`;
@@ -30,29 +39,24 @@ async function classifyCategory (text, categories) {
   });
 
   const category = toTitleCase(stream.choices[0].message.content.split('\n')[0].trim().replace(/[.'"]/g, ''));
-
+  if (!categories.includes(category)) {
+    throw new Error(`Invalid category ${category} for categories ${categories}`);
+  }
   return category;
 }
 
 async function classify (text) {
-  const subcategory = await classifyCategory(text, Object.keys(SUBCATEGORY_TO_CATEGORY));
+  const subcategory = await classifyCategory(text, SUBCATEGORIES);
   const category = SUBCATEGORY_TO_CATEGORY[subcategory];
-  let alternate_subcategory;
 
-  if (subsubcategories[subcategory]) {
-    alternate_subcategory = await classifyCategory(text, subsubcategories[subcategory]);
-    if (!subsubcategories[subcategory].includes(alternate_subcategory)) {
-      throw new Error(`Invalid subsubcategory ${alternate_subcategory} for subcategory ${subcategory}`);
-    }
-    return { category, subcategory, alternate_subcategory };
+  if (SUBCATEGORY_TO_SUBSUBCATEGORY[subcategory]) {
+    const alternateSubcategory = await classifyCategory(text, SUBCATEGORY_TO_SUBSUBCATEGORY[subcategory]);
+    return { category, subcategory, alternate_subcategory: alternateSubcategory };
   }
 
-  if (alternate_subcategories[category]) {
-    alternate_subcategory = await classifyCategory(text, alternate_subcategories[category]);
-    if (!alternate_subcategories[category].includes(alternate_subcategory)) {
-      throw new Error(`Invalid alternate subcategory ${alternate_subcategory} for category ${category}`);
-    }
-    return { category, subcategory, alternate_subcategory };
+  if (CATEGORY_TO_ALTERNATE_SUBCATEGORY[category]) {
+    const alternateSubcategory = await classifyCategory(text, CATEGORY_TO_ALTERNATE_SUBCATEGORY[category]);
+    return { category, subcategory, alternate_subcategory: alternateSubcategory };
   }
 
   return { category, subcategory };
@@ -73,4 +77,5 @@ for (const [filename, lines] of [
       continue;
     }
   }
+  console.log(`Finished processing ${filename} with ${lines.length} lines`);
 }

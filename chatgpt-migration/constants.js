@@ -1,5 +1,3 @@
-const categories = ['Literature', 'History', 'Science', 'Fine Arts', 'Religion', 'Mythology', 'Philosophy', 'Social Science', 'Current Events', 'Geography', 'Other Academic', 'Trash'];
-
 const SUBCATEGORY_TO_CATEGORY = {
   'American Literature': 'Literature',
   'British Literature': 'Literature',
@@ -28,8 +26,9 @@ const SUBCATEGORY_TO_CATEGORY = {
   'Other Academic': 'Other Academic',
   Trash: 'Trash'
 };
+export const SUBCATEGORIES = Object.keys(SUBCATEGORY_TO_CATEGORY);
 
-const alternate_subcategories = {
+const CATEGORY_TO_ALTERNATE_SUBCATEGORY = {
   Literature: [
     'Drama',
     'Long Fiction',
@@ -39,7 +38,7 @@ const alternate_subcategories = {
   ]
 };
 
-const subsubcategories = {
+const SUBCATEGORY_TO_SUBSUBCATEGORY = {
   'Other Science': [
     'Math',
     'Astronomy',
@@ -68,8 +67,7 @@ const subsubcategories = {
 };
 
 export {
-  categories,
   SUBCATEGORY_TO_CATEGORY,
-  alternate_subcategories,
-  subsubcategories
+  CATEGORY_TO_ALTERNATE_SUBCATEGORY,
+  SUBCATEGORY_TO_SUBSUBCATEGORY
 };

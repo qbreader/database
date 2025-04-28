@@ -20,7 +20,6 @@ function bonusToString (bonus) {
     string += `[10] ${bonus.parts[i]} `;
     string += `ANSWER: ${bonus.answers[i]} `;
   }
-
   return string;
 }
 
@@ -32,21 +31,30 @@ function bonusToString (bonus) {
  * @returns {Promise<void>} A promise that resolves when the logging is complete.
  */
 async function logQuestions (filter, tossupFilename = 'tossup-log.txt', bonusFilename = 'bonus-log.txt') {
-  await tossups.find(filter).forEach(tossup => {
+  const tossupCursor = tossups.find(filter);
+  let tossup = await tossupCursor.next();
+  while (tossup !== null) {
     writeFileSync(
       tossupFilename,
       JSON.stringify({ _id: tossup._id, text: tossup.question_sanitized + ' ' + tossup.answer_sanitized }) + '\n',
       { flag: 'a' }
     );
-  });
+    tossup = await tossupCursor.next();
+  }
+  console.log('Finished processing tossups');
 
-  await bonuses.find(filter).forEach(bonus => {
+  const bonusCursor = bonuses.find(filter);
+  let bonus = await bonusCursor.next();
+  while (bonus !== null) {
     writeFileSync(
       bonusFilename,
       JSON.stringify({ _id: bonus._id, text: bonusToString(bonus) }) + '\n',
       { flag: 'a' }
     );
-  });
+    bonus = await bonusCursor.next();
+  }
+  console.log('Finished processing bonuses');
 }
 
-// await logQuestions({ 'reports.reason': 'wrong-category' });
+await logQuestions({ 'reports.reason': 'wrong-category' });
+await client.close();
