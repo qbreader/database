@@ -40,9 +40,20 @@ async function deleteAdminBuzzes (packetName) {
 }
 
 async function deletePacket (packetName) {
+  const packet = await packets.findOne({ name: packetName });
+  if (packet?.sample_audio_id) {
+    await sampleAudio.deleteOne({ _id: packet.sample_audio_id });
+  }
+  for (const tossup of await tossups.find({ 'packet.name': packetName }).toArray()) {
+    if (tossup.audio_id) {
+      await audio.deleteOne({ _id: tossup.audio_id });
+    }
+  }
   await packets.deleteOne({ name: packetName });
   await tossups.deleteMany({ 'packet.name': packetName });
   await buzzes.deleteMany({ 'packet.name': packetName });
+  await divisionChoices.deleteMany({ 'packet.name': packetName });
+  await payments.deleteMany({ 'packet.name': packetName });
 }
 
 async function renamePacket (oldName, newName) {
