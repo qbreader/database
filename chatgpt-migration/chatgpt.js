@@ -1,6 +1,6 @@
 import 'dotenv/config';
 
-import { CATEGORY_TO_ALTERNATE_SUBCATEGORY, SUBCATEGORY_TO_SUBSUBCATEGORY, SUBCATEGORY_TO_CATEGORY, SUBCATEGORIES } from './constants.js';
+import { CATEGORY_TO_ALTERNATE_SUBCATEGORY, SUBCATEGORY_TO_SUBSUBCATEGORY, SUBCATEGORY_TO_CATEGORY, SUBCATEGORIES } from '../categories.js';
 
 import { readFileSync, writeFileSync } from 'fs';
 import OpenAI from 'openai';
@@ -45,9 +45,15 @@ async function classifyCategory (text, categories) {
   return category;
 }
 
-async function classify (text) {
-  const subcategory = await classifyCategory(text, SUBCATEGORIES);
-  const category = SUBCATEGORY_TO_CATEGORY[subcategory];
+async function classify (text, category = null) {
+  let subcategory;
+  if (category) {
+    const subcategories = Object.keys(SUBCATEGORY_TO_CATEGORY).filter(key => SUBCATEGORY_TO_CATEGORY[key] === category);
+    subcategory = await classifyCategory(text, subcategories);
+  } else {
+    subcategory = await classifyCategory(text, SUBCATEGORIES);
+    category = SUBCATEGORY_TO_CATEGORY[subcategory];
+  }
 
   if (SUBCATEGORY_TO_SUBSUBCATEGORY[subcategory]) {
     const alternateSubcategory = await classifyCategory(text, SUBCATEGORY_TO_SUBSUBCATEGORY[subcategory]);

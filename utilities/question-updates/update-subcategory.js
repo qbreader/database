@@ -1,26 +1,22 @@
 import { perTossupData, tossups, perBonusData, bonuses } from '../collections.js';
-
-import { createRequire } from 'module';
-
-const require = createRequire(import.meta.url);
-const cats = require('../../subcat-to-cat.json');
+import { SUBCATEGORY_TO_CATEGORY } from '../../categories.js';
 
 /**
  *
  * @param {ObjectId} _id the id of the question to update
  * @param {'tossup' | 'bonus'} type the type of question to update
  * @param {string} subcategory the new subcategory to set
- * @param {string} [alternate_subcategory] the alternate subcategory to set
+ * @param {string} [alternateSubcategory] the alternate subcategory to set
  * @param {boolean} [clearReports=true] whether to clear the reports field
  * @returns {Promise<UpdateResult>}
  */
-export default async function updateSubcategory (_id, type, subcategory, alternate_subcategory, clearReports = true) {
-  if (!(subcategory in cats)) {
+export default async function updateSubcategory (_id, type, subcategory, alternateSubcategory, clearReports = true) {
+  if (!(subcategory in SUBCATEGORY_TO_CATEGORY)) {
     console.log(`Subcategory ${subcategory} not found`);
     return;
   }
 
-  const category = cats[subcategory];
+  const category = SUBCATEGORY_TO_CATEGORY[subcategory];
 
   const dataUpdate = {
     $set: {
@@ -43,9 +39,9 @@ export default async function updateSubcategory (_id, type, subcategory, alterna
     questionUpdate.$unset.reports = 1;
   }
 
-  if (alternate_subcategory) {
-    questionUpdate.$set.alternate_subcategory = alternate_subcategory;
-    dataUpdate.$set.alternate_subcategory = alternate_subcategory;
+  if (alternateSubcategory) {
+    questionUpdate.$set.alternate_subcategory = alternateSubcategory;
+    dataUpdate.$set.alternate_subcategory = alternateSubcategory;
   } else {
     questionUpdate.$unset.alternate_subcategory = 1;
     dataUpdate.$unset.alternate_subcategory = 1;
@@ -53,11 +49,11 @@ export default async function updateSubcategory (_id, type, subcategory, alterna
 
   switch (type) {
     case 'tossup': {
-      await perTossupData.updateMany({ _id }, dataUpdate);
+      await perTossupData.updateOne({ _id }, dataUpdate);
       return await tossups.updateOne({ _id }, questionUpdate);
     }
     case 'bonus': {
-      await perBonusData.updateMany({ _id }, dataUpdate);
+      await perBonusData.updateOne({ _id }, dataUpdate);
       return await bonuses.updateOne({ _id }, questionUpdate);
     }
   }
