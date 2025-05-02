@@ -16,6 +16,9 @@ for (const [type, lines] of [
   ['bonus', readFileSync('output-bonus.txt', 'utf-8').split('\n')]
 ]) {
   for (const line of lines) {
+    if (line.trim() === '') {
+      continue;
+    }
     const question = JSON.parse(line);
     await qu.updateSubcategory(new ObjectId(question._id), type, question.subcategory, question.alternate_subcategory);
   }
