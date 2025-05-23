@@ -1,17 +1,13 @@
 import { tossups, bonuses } from '../collections.js';
 
-export default function clearReports () {
-  tossups.updateMany(
+export default async function clearReports () {
+  console.log(await tossups.updateMany(
     { reports: { $exists: true } },
     { $unset: { reports: '' } }
-  ).then(result => {
-    console.log(result);
-  });
+  ));
 
-  bonuses.updateMany(
+  console.log(await bonuses.updateMany(
     { reports: { $exists: true } },
     { $unset: { reports: '' } }
-  ).then(result => {
-    console.log(result);
-  });
+  ));
 }
