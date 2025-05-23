@@ -6,4 +6,6 @@
 # .env should be a file with the MONGODB_USERNAME and MONGODB_PASSWORD in the same directory as this file
 # defined as bash variables (a standard .env file should do the trick)
 source .env
-mongodump --uri="mongodb+srv://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@qbreader.0i7oej9.mongodb.net/?retryWrites=true&w=majority"
+CLUSTER_URL="qbreader2.z35tynb"
+URI="mongodb+srv://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@${CLUSTER_URL}.mongodb.net/?retryWrites=true&w=majority"
+mongodump --uri=$URI

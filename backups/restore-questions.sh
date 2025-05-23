@@ -5,7 +5,9 @@
 # .env should be a file with the MONGODB_USERNAME and MONGODB_PASSWORD in the same directory as this file
 # defined as bash variables (a standard .env file should do the trick)
 source .env
-mongorestore -d qbreader -c tossups --uri="mongodb+srv://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@qbreader.0i7oej9.mongodb.net/?retryWrites=true&w=majority" tossups.bson
-mongorestore -d qbreader -c bonuses --uri="mongodb+srv://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@qbreader.0i7oej9.mongodb.net/?retryWrites=true&w=majority" bonuses.bson
-mongorestore -d qbreader -c packets --uri="mongodb+srv://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@qbreader.0i7oej9.mongodb.net/?retryWrites=true&w=majority" packets.bson
-mongorestore -d qbreader -c sets --uri="mongodb+srv://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@qbreader.0i7oej9.mongodb.net/?retryWrites=true&w=majority" sets.bson
+CLUSTER_URL="qbreader2.z35tynb"
+URI="mongodb+srv://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@${CLUSTER_URL}.mongodb.net/?retryWrites=true&w=majority"
+mongorestore -d qbreader -c tossups --uri=$URI tossups.bson
+mongorestore -d qbreader -c bonuses --uri=$URI bonuses.bson
+mongorestore -d qbreader -c packets --uri=$URI packets.bson
+mongorestore -d qbreader -c sets --uri=$URI sets.bson
