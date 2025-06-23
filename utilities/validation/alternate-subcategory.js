@@ -1,7 +1,5 @@
 import { bonuses, tossups } from '../collections.js';
 
-import { bonusToString, tossupToString } from '../../stringify.js';
-
 const categories = [
   'Literature'
 ];
@@ -12,7 +10,7 @@ const subcategories = [
   'Social Science'
 ];
 
-const alternate_subcategories = [
+const alternateSubcategories = [
   'Drama',
   'Long Fiction',
   'Poetry',
@@ -28,6 +26,7 @@ const alternate_subcategories = [
   'Dance',
   'Film',
   'Jazz',
+  'Musicals',
   'Opera',
   'Photography',
   'Misc Arts',
@@ -46,32 +45,32 @@ export default async function alternateSubcategoryValidation () {
   let valid = true;
 
   for (const tossup of await tossups.find({ category: { $in: categories }, alternate_subcategory: null }).toArray()) {
-    console.log(tossupToString(tossup));
+    console.log(`Tossup ${tossup._id} has ${tossup.category} category and no alternate subcategory.`);
     valid = false;
   }
 
   for (const bonus of await bonuses.find({ category: { $in: categories }, alternate_subcategory: null }).toArray()) {
-    console.log(bonusToString(bonus));
+    console.log(`Bonus ${bonus._id} has ${bonus.category} category and no alternate subcategory.`);
     valid = false;
   }
 
   for (const tossup of await tossups.find({ subcategory: { $in: subcategories }, alternate_subcategory: null }).toArray()) {
-    console.log(tossupToString(tossup));
+    console.log(`Tossup ${tossup._id} has ${tossup.category} / ${tossup.subcategory} subcategory and no alternate subcategory.`);
     valid = false;
   }
 
   for (const bonus of await bonuses.find({ subcategory: { $in: subcategories }, alternate_subcategory: null }).toArray()) {
-    console.log(bonusToString(bonus));
+    console.log(`Bonus ${bonus._id} has ${bonus.category} / ${bonus.subcategory} subcategory and no alternate subcategory.`);
     valid = false;
   }
 
-  for (const tossup of await tossups.find({ alternate_subcategory: { $not: { $in: alternate_subcategories } } }).toArray()) {
-    console.log(tossupToString(tossup));
+  for (const tossup of await tossups.find({ alternate_subcategory: { $not: { $in: alternateSubcategories } } }).toArray()) {
+    console.log(`Tossup ${tossup._id} has alternate subcategory ${tossup.alternate_subcategory}, which is not in the list of valid alternate subcategories.`);
     valid = false;
   }
 
-  for (const bonus of await bonuses.find({ alternate_subcategory: { $not: { $in: alternate_subcategories } } }).toArray()) {
-    console.log(bonusToString(bonus));
+  for (const bonus of await bonuses.find({ alternate_subcategory: { $not: { $in: alternateSubcategories } } }).toArray()) {
+    console.log(`Bonus ${bonus._id} has alternate subcategory ${bonus.alternate_subcategory}, which is not in the list of valid alternate subcategories.`);
     valid = false;
   }
 

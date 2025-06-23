@@ -43,13 +43,13 @@ export default async function bonusesValidation (verbose = true) {
         valid: false
       }
     },
-    { $sort: { answers_length: 1, 'set.year': 1 } }
+    { $sort: { 'set.name': 1, answers_length: 1 } }
   ];
 
   for (const bonus of await bonuses.aggregate(aggregation1).toArray()) {
     total++;
     if (verbose) {
-      console.log(`Bonus ${bonus._id} has ${bonus.parts_length} parts and ${bonus.answers_length} answers`);
+      console.log(`Bonus ${bonus._id} (${bonus.set.name}) has ${bonus.parts_length} parts and ${bonus.answers_length} answers`);
     }
   }
 

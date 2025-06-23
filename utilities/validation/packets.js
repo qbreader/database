@@ -34,7 +34,7 @@ export default async function packetValidation (verbose = true) {
   }
 
   if (verbose) {
-    console.log(`Validated ${tossupResults.length} tossups.`);
+    console.log(`validation/packets.js: validated ${tossupResults.length} tossups.`);
   }
 
   const bonusResults = await bonuses.aggregate(aggregation).toArray();
@@ -51,11 +51,11 @@ export default async function packetValidation (verbose = true) {
   }
 
   if (bonusResults.length > 0) {
-    // await bulkBonus.execute();
+    await bulkBonus.execute();
   }
 
   if (verbose) {
-    console.log(`Validated ${bonusResults.length} bonuses.`);
+    console.log(`validation/packets.js: validated ${bonusResults.length} bonuses.`);
   }
 
   const packetResults = await packets.aggregate([
@@ -80,7 +80,7 @@ export default async function packetValidation (verbose = true) {
   }
 
   if (verbose) {
-    console.log(`Validated ${packetResults.length} packets.`);
+    console.log(`validation/packets.js: validated ${packetResults.length} packets.`);
   }
 
   return total;

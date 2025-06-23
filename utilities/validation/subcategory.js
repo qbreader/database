@@ -1,7 +1,5 @@
 import { bonuses, tossups } from '../collections.js';
 
-import { bonusToString, tossupToString } from '../../stringify.js';
-
 const subcategories = [
   'American Literature',
   'British Literature',
@@ -28,19 +26,24 @@ const subcategories = [
   'Current Events',
   'Geography',
   'Other Academic',
-  'Trash'
+  'Movies',
+  'Music',
+  'Sports',
+  'Television',
+  'Video Games',
+  'Other Pop Culture'
 ];
 
 export default async function subcategoryValidation () {
   let valid = true;
 
   for (const tossup of await tossups.find({ subcategory: { $not: { $in: subcategories } } }).toArray()) {
-    console.log(tossupToString(tossup));
+    console.log(`Tossup ${tossup._id} has ${tossup.category} / ${tossup.subcategory} subcategory, which is not in the list of valid subcategories.`);
     valid = false;
   }
 
   for (const bonus of await bonuses.find({ subcategory: { $not: { $in: subcategories } } }).toArray()) {
-    console.log(bonusToString(bonus));
+    console.log(`Bonus ${bonus._id} has ${bonus.category} / ${bonus.subcategory} subcategory, which is not in the list of valid subcategories.`);
     valid = false;
   }
 
