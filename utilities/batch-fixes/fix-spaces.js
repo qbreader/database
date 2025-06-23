@@ -1,8 +1,8 @@
 import { tossups, bonuses } from '../collections.js';
 
 export default async function fixSpaces () {
-  const fields = ['question', 'answer', 'formatted_answer', 'leadin'];
-  const arrayFields = ['parts', 'answers', 'formatted_answers'];
+  const fields = ['question', 'question_sanitized', 'answer', 'answer_sanitized', 'leadin', 'leadin_sanitized'];
+  const arrayFields = ['parts', 'parts_sanitized', 'answers', 'answers_sanitized'];
 
   for (const field of fields) {
     console.log(field, await tossups.countDocuments({ [field]: /\t|^ | $| {2,}/ }));
