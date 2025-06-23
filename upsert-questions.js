@@ -76,6 +76,9 @@ async function upsertPacket ({ setName, packetName, packetNumber, zeroIndexQuest
   }
 
   const tossupCount = await tossups.countDocuments({ 'packet._id': packetId });
+  if (tossupCount > data.tossups.length) {
+    console.log(`Warning: ${tossupCount} tossups already in database, only uploading ${data.tossups.length}.`);
+  }
 
   data.tossups.forEach(async (tossup, index) => {
     const number = zeroIndexQuestions ? index : index + 1;
@@ -156,6 +159,9 @@ async function upsertPacket ({ setName, packetName, packetNumber, zeroIndexQuest
   });
 
   const bonusCount = await bonuses.countDocuments({ 'packet._id': packetId });
+  if (bonusCount > data.bonuses.length) {
+    console.log(`Warning: ${bonusCount} bonuses already in database, only uploading ${data.bonuses.length}.`);
+  }
 
   data.bonuses.forEach(async (bonus, index) => {
     const number = zeroIndexQuestions ? index : index + 1;
