@@ -276,9 +276,9 @@ async function upsertPacket ({ setName, packetName, packetNumber, zeroIndexQuest
 /**
  *
  * @param {string} setName
- * @param {number} difficulty
- * @param {boolean} [standard=true]
- * @param {boolean} [zeroIndexQuestions=false] - whether question numbering starts at 0 or 1. Defaults to 1.
+ * @param {number} difficulty - the difficulty of the set, as a number from 0 to 10. This parameter is ignored if the set already exists.
+ * @param {boolean} [standard=true] - whether the set is a standard set. Defaults to true. This parameter is ignored if the set already exists.
+ * @param {boolean} [zeroIndexQuestions=false] - whether question numbering starts at 0 or 1. Defaults to 1 (i.e. zeroIndexQuestions = false).
  * @param {string} [folderPath='./'] - the folder that the set is in. Defaults to the current directory.
  * @returns {Promise<boolean>} whether the set existed before updating
  */
