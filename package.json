@@ -7,8 +7,7 @@
   "dependencies": {
     "dotenv": "^16.0.2",
     "mongodb": "^4.9.0",
-    "openai": "^4.24.1",
-    "tqdm": "^2.0.3"
+    "openai": "^4.24.1"
   },
   "devDependencies": {
     "semistandard": "^17.0.0"
