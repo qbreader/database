@@ -1,4 +1,5 @@
 import { tossups, bonuses } from '../collections.js';
+import removeHTML from '../../core/remove-html.js';
 import sanitizeString from '../../core/sanitize-string.js';
 
 /**
@@ -49,7 +50,7 @@ export default async function fixSpaces ({ performUpdates = false } = {}) {
 
         await typeToCollection(type).updateOne(
           { _id: question._id },
-          { $set: { [field]: question[field], [`${field}_sanitized`]: sanitizeString(question[field]) } }
+          { $set: { [field]: question[field], [`${field}_sanitized`]: sanitizeString(removeHTML(question[field])) } }
         );
 
         counter++;

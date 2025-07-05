@@ -1,15 +1,6 @@
 import { bonuses, tossups } from '../collections.js';
+import removeHTML from '../../core/remove-html.js';
 import sanitizeString from '../../core/sanitize-string.js';
-
-/**
- *
- * @param {string} string
- * @returns
- */
-function removeHTML (string) {
-  return string
-    .replace(/<\/?(b|u|i|em)>/g, '');
-}
 
 const acceptEitherRegex = /[a-z][A-Z].*[[(]accept either/;
 
