@@ -36,8 +36,6 @@ const alternateSubcategories = [
   'Psychology',
   'Sociology',
   'Other Social Science',
-  'Beliefs',
-  'Practices',
   null
 ];
 
