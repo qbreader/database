@@ -1,9 +1,9 @@
-import { tossupData } from '../utilities/collections.js';
+import { perTossupData } from '../utilities/collections.js';
 
-const cursor = tossupData.find(
-  {},
-  { projection: { _id: 0, tossup_id: 1, celerity: 1, isCorrect: 1, difficulty: 1, subcategory: 1, alternate_subcategory: 1 } }
-);
+const cursor = perTossupData.aggregate([
+  { $unwind: '$data' },
+  { $project: { _id: 0, tossup_id: '$_id', celerity: '$data.celerity', isCorrect: '$data.isCorrect', difficulty: 1, subcategory: 1, alternate_subcategory: 1 } }
+]);
 
 let current;
 do {
