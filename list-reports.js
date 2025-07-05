@@ -1,6 +1,7 @@
-import { HEADER, ENDC } from './bcolors.js';
+import { HEADER, ENDC } from './core/bcolors.js';
+import { closeConnection } from './core/mongodb-client.js';
 import { tossupToString, bonusToString } from './stringify.js';
-import { bonuses, closeConnection, tossups } from './utilities/collections.js';
+import { bonuses, tossups } from './utilities/collections.js';
 
 const reportReasons = ['wrong-category', 'text-error', 'answer-checking', 'other'];
 

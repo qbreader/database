@@ -1,4 +1,4 @@
-import * as bcolors from './bcolors.js';
+import * as bcolors from './core/bcolors.js';
 
 function tossupToString (question, bashHighlighting = true) {
   let string = '';

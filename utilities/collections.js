@@ -1,12 +1,4 @@
-import 'dotenv/config';
-
-import { MongoClient } from 'mongodb';
-
-const uri = `mongodb+srv://${process.env.MONGODB_USERNAME || 'geoffreywu42'}:${process.env.MONGODB_PASSWORD || 'password'}@qbreader2.z35tynb.mongodb.net/?retryWrites=true&w=majority`;
-export const client = new MongoClient(uri);
-await client.connect();
-
-console.log('connected to mongodb');
+import { client } from '../core/mongodb-client.js';
 
 const questionDatabase = client.db('qbreader');
 export const sets = questionDatabase.collection('sets');
@@ -20,7 +12,3 @@ export const perBonusData = accountInfo.collection('per-bonus-data');
 export const tossupStars = accountInfo.collection('tossup-stars');
 export const bonusStars = accountInfo.collection('bonus-stars');
 export const users = accountInfo.collection('users');
-
-export const closeConnection = async () => {
-  await client.close();
-};

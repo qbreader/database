@@ -1,14 +1,11 @@
 import 'dotenv/config';
 
+import { client } from '../core/mongodb-client.js';
+
 import * as fs from 'fs';
-import { MongoClient, ObjectId } from 'mongodb';
+import { ObjectId } from 'mongodb';
 
 const EXTENSION = '.mp3';
-
-const uri = `mongodb+srv://${process.env.MONGODB_USERNAME || 'geoffreywu42'}:${process.env.MONGODB_PASSWORD || 'password'}@qbreader.0i7oej9.mongodb.net/?retryWrites=true&w=majority`;
-const client = new MongoClient(uri);
-await client.connect();
-console.log('connected to mongodb');
 
 const database = client.db('rapidqb');
 const audio = database.collection('audio');

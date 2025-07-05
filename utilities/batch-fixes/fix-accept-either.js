@@ -1,4 +1,5 @@
-import { tossups, bonuses } from '../collections.js';
+import { bonuses, tossups } from '../collections.js';
+import sanitizeString from '../../core/sanitize-string.js';
 
 /**
  *
@@ -8,33 +9,6 @@ import { tossups, bonuses } from '../collections.js';
 function removeHTML (string) {
   return string
     .replace(/<\/?(b|u|i|em)>/g, '');
-}
-
-/**
- *
- * @param {string} string
- * @returns
- */
-function unformatString (string) {
-  return string
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[\u2010-\u2015]/g, '-')
-    .replace(/[\u2018-\u201B]/g, '\'')
-    .replace(/[\u201C-\u201F]/g, '"')
-    .replace(/[\u2026]/g, '...')
-    .replace(/[\u2032-\u2037]/g, '\'')
-    .replace(/[\u00B7\u22C5\u2027]/g, '') // interpuncts
-    .replace(/\u0142/g, 'l'); // ł -> l
-}
-
-/**
- *
- * @param {string} string
- * @returns
- */
-function sanitizeString (string) {
-  return unformatString(removeHTML(string));
 }
 
 const acceptEitherRegex = /[a-z][A-Z].*[[(]accept either/;
@@ -51,7 +25,7 @@ function fixSingleAcceptEither (answer) {
     answer = answer.replace(/<\/u><u>/g, '</u> <u>');
   }
 
-  const answerSanitized = sanitizeString(answer);
+  const answerSanitized = sanitizeString(removeHTML(answer));
   return { answer, answerSanitized };
 }
 

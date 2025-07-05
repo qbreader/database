@@ -1,12 +1,9 @@
 import 'dotenv/config';
 
-import * as fs from 'fs';
-import { MongoClient, ObjectId } from 'mongodb';
+import { client } from '../core/mongodb-client.js';
 
-const uri = `mongodb+srv://${process.env.MONGODB_USERNAME || 'geoffreywu42'}:${process.env.MONGODB_PASSWORD || 'password'}@qbreader.0i7oej9.mongodb.net/?retryWrites=true&w=majority`;
-const client = new MongoClient(uri);
-await client.connect();
-console.log('connected to mongodb');
+import * as fs from 'fs';
+import { ObjectId } from 'mongodb';
 
 const database = client.db('rapidqb');
 const packets = database.collection('packets');

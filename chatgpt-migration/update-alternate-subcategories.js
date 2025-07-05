@@ -1,15 +1,10 @@
 import 'dotenv/config';
 
+import { client } from '../core/mongodb-client.js';
 import * as qu from '../utilities/question-updates/index.js';
 
 import { readFileSync } from 'fs';
-import { MongoClient, ObjectId } from 'mongodb';
-
-const uri = `mongodb+srv://${process.env.MONGODB_USERNAME || 'geoffreywu42'}:${process.env.MONGODB_PASSWORD || 'password'}@qbreader.0i7oej9.mongodb.net/?retryWrites=true&w=majority`;
-const client = new MongoClient(uri);
-await client.connect();
-
-console.log('connected to mongodb');
+import { ObjectId } from 'mongodb';
 
 for (const [type, lines] of [
   ['tossup', readFileSync('output-tossup.txt', 'utf-8').split('\n')],
