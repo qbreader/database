@@ -1,54 +1,39 @@
-import 'dotenv/config';
-
 import { HEADER, ENDC } from './bcolors.js';
 import { tossupToString, bonusToString } from './stringify.js';
-
-import { MongoClient } from 'mongodb';
-
-const uri = `mongodb+srv://${process.env.MONGODB_USERNAME || 'geoffreywu42'}:${process.env.MONGODB_PASSWORD || 'password'}@qbreader.0i7oej9.mongodb.net/?retryWrites=true&w=majority`;
-const client = new MongoClient(uri);
-client.connect().then(async () => {
-  console.log('connected to mongodb');
-  // await listReports();
-  // await listReports({ allowedReasons: [ 'wrong-category' ] });
-  // await listReports({ allowedReasons: [ 'text-error' ] });
-  // await listReports({ allowedReasons: [ 'answer-checking' ] });
-  // await listReports({ allowedReasons: [ 'other' ] });
-  client.close();
-});
-
-const database = client.db('qbreader');
-const tossups = database.collection('tossups');
-const bonuses = database.collection('bonuses');
+import { bonuses, closeConnection, tossups } from './utilities/collections.js';
 
 const reportReasons = ['wrong-category', 'text-error', 'answer-checking', 'other'];
 
 async function listReports ({ bashHighlighting = true, allowedReasons = reportReasons } = {}) {
-  await tossups.aggregate([
+  function printReports (reports) {
+    for (let i = 0; i < reports.length; i++) {
+      console.log(`${bashHighlighting ? HEADER : ''}Reason:${bashHighlighting ? ENDC : ''} ${reports[i].reason}`);
+      console.log(`${bashHighlighting ? HEADER : ''}Description:${bashHighlighting ? ENDC : ''} ${reports[i].description}`);
+      console.log();
+    }
+  }
+
+  const aggregation = [
     { $match: { 'reports.reason': { $in: allowedReasons } } },
     { $addFields: { numberOfReports: { $size: '$reports' } } },
     { $sort: { numberOfReports: -1 } }
-  ]).forEach(async question => {
+  ];
+
+  for (const question of await tossups.aggregate(aggregation).toArray()) {
     console.log(tossupToString(question, bashHighlighting));
+    printReports(question.reports);
+  }
 
-    for (let i = 0; i < question.reports.length; i++) {
-      console.log(`${bashHighlighting ? HEADER : ''}Reason:${bashHighlighting ? ENDC : ''} ${question.reports[i].reason}`);
-      console.log(`${bashHighlighting ? HEADER : ''}Description:${bashHighlighting ? ENDC : ''} ${question.reports[i].description}`);
-      console.log();
-    }
-  });
-
-  await bonuses.aggregate([
-    { $match: { 'reports.reason': { $in: allowedReasons } } },
-    { $addFields: { numberOfReports: { $size: '$reports' } } },
-    { $sort: { numberOfReports: -1 } }
-  ]).forEach(async question => {
+  for (const question of await bonuses.aggregate(aggregation).toArray()) {
     console.log(bonusToString(question, bashHighlighting));
-
-    for (let i = 0; i < question.reports.length; i++) {
-      console.log(`${bashHighlighting ? HEADER : ''}Reason:${bashHighlighting ? ENDC : ''} ${question.reports[i].reason}`);
-      console.log(`${bashHighlighting ? HEADER : ''}Description:${bashHighlighting ? ENDC : ''} ${question.reports[i].description}`);
-      console.log();
-    }
-  });
+    printReports(question.reports);
+  }
 }
+
+// await listReports();
+await listReports({ allowedReasons: ['wrong-category'] });
+// await listReports({ allowedReasons: ['text-error'] });
+// await listReports({ allowedReasons: ['answer-checking'] });
+// await listReports({ allowedReasons: ['other'] });
+
+await closeConnection();
