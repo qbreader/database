@@ -1,10 +1,20 @@
 import { tossups, bonuses } from '../collections.js';
 
+/**
+ *
+ * @param {string} string
+ * @returns
+ */
 function removeHTML (string) {
   return string
     .replace(/<\/?(b|u|i|em)>/g, '');
 }
 
+/**
+ *
+ * @param {string} string
+ * @returns
+ */
 function unformatString (string) {
   return string
     .normalize('NFD')
@@ -18,128 +28,103 @@ function unformatString (string) {
     .replace(/\u0142/g, 'l'); // ł -> l
 }
 
+/**
+ *
+ * @param {string} string
+ * @returns
+ */
 function sanitizeString (string) {
   return unformatString(removeHTML(string));
 }
 
-const removeParentheses = (string) => {
-  return string
-    .replace(/\([^)]*\)/g, '')
-    .replace(/\[[^\]]*\]/g, '');
-};
+const acceptEitherRegex = /[a-z][A-Z].*[[(]accept either/;
 
-const splitMainAnswer = (string) => {
-  const bracketsSubAnswer = (string.match(/(?<=\[)[^\]]*(?=\])/g) ?? ['']).pop();
-  const parenthesesSubAnswer = (string.match(/(?<=\()[^)]*(?=\))/g) ?? ['']).pop();
-
-  const mainAnswer = removeParentheses(string);
-
-  if (bracketsSubAnswer.length !== 0) { return { mainAnswer, subAnswer: bracketsSubAnswer }; }
-
-  for (const directive of ['or', 'prompt', 'antiprompt', 'anti-prompt', 'accept', 'reject', 'do not accept']) {
-    if (parenthesesSubAnswer.toLowerCase().startsWith(directive)) { return { mainAnswer, subAnswer: parenthesesSubAnswer }; }
+/**
+ * @param {string} answer
+ */
+function fixSingleAcceptEither (answer) {
+  if (answer.match(/<\/u><\/b><b><u>/)) {
+    answer = answer.replace(/<\/u><\/b><b><u>/g, '</u></b> <b><u>');
+  } else if (answer.match(/<b>.*<\/u><u>.*<\/b>/)) {
+    answer = answer.replace(/<\/u><u>/g, '</u></b> <b><u>');
+  } else if (answer.match(/<\/u><u>/)) {
+    answer = answer.replace(/<\/u><u>/g, '</u> <u>');
   }
 
-  return { mainAnswer, subAnswer: '' };
-};
+  const answerSanitized = sanitizeString(answer);
+  return { answer, answerSanitized };
+}
 
-async function fixAcceptEitherTossups (printFrequency = 10) {
-  const total = await tossups.countDocuments({ answer_sanitized: { $regex: /[a-z][A-Z].*[[(]accept either/ } });
+async function fixAcceptEitherTossups ({ performUpdates, printFrequency }) {
+  const total = await tossups.countDocuments({ answer_sanitized: { $regex: acceptEitherRegex } });
   const step = Math.floor(total / printFrequency);
   let counter = 0;
 
-  for (const tossup of await tossups.find({ answer_sanitized: { $regex: /[a-z][A-Z].*[[(]accept either/ } }).toArray()) {
+  for (const tossup of await tossups.find({ answer_sanitized: { $regex: acceptEitherRegex } }).toArray()) {
     if (++counter % step === 0) {
       console.log(`${counter} / ${total}`);
     }
 
-    if (tossup.answer.match(/<\/u><\/b><b><u>/)) {
-      tossup.answer = tossup.answer.replace(/<\/u><\/b><b><u>/g, '</u></b> <b><u>');
-      tossup.answer_sanitized = sanitizeString(tossup.answer);
+    const { answer, answerSanitized } = fixSingleAcceptEither(tossup.answer);
+
+    if (performUpdates) {
       await tossups.updateOne(
         { _id: tossup._id },
-        {
-          $set: {
-            answer: tossup.answer,
-            answer_sanitized: sanitizeString(tossup.answer)
-          }
-        }
+        { $set: { answer, answer_sanitized: answerSanitized } }
       );
     } else {
-      const { mainAnswer } = splitMainAnswer(tossup.answer ?? '');
-
-      if (mainAnswer.match(/(?<=<u>)[^<]*(?=<\/u>)/g)?.length !== 1) {
-        continue;
-      }
-
-      tossup.answer = tossup.answer.replace(/(?<=[a-z])(?=[A-Z])/g, '</u></b> <b><u>');
-      tossup.answer_sanitized = tossup.answer_sanitized.replace(/(?<=[a-z])(?=[A-Z])/g, ' ');
-
-      await tossups.updateOne(
-        { _id: tossup._id },
-        {
-          $set: {
-            answer: tossup.answer,
-            answer_sanitized: sanitizeString(tossup.answer)
-          }
-        }
-      );
+      console.log(`${tossup._id}: ${tossup.answer}`);
+      console.log(`                      ->: ${answer}`);
+      console.log(`                        : ${tossup.answer_sanitized}`);
+      console.log(`                      ->: ${answerSanitized}`);
+      return;
     }
   }
 }
 
-async function fixAcceptEitherBonuses (printFrequency = 10) {
-  const total = await bonuses.countDocuments({ answers_sanitized: { $regex: /[a-z][A-Z].*[[(]accept either/ } });
+async function fixAcceptEitherBonuses ({ performUpdates, printFrequency }) {
+  const total = await bonuses.countDocuments({ answers_sanitized: { $regex: acceptEitherRegex } });
   const step = Math.floor(total / printFrequency);
   let counter = 0;
 
-  for (const bonus of await bonuses.find({ answers_sanitized: { $regex: /[a-z][A-Z].*[[(]accept either/ } }).toArray()) {
+  for (const bonus of await bonuses.find({ answers_sanitized: { $regex: acceptEitherRegex } }).toArray()) {
     if (++counter % step === 0) {
       console.log(`${counter} / ${total}`);
     }
 
     for (let i = 0; i < bonus.answers.length; i++) {
-      if (!bonus.answers_sanitized[i].match(/[a-z][A-Z].*[[(]accept either/)) {
+      if (!bonus.answers_sanitized[i].match(acceptEitherRegex)) {
         continue;
       }
 
-      if (bonus.answers[i].match(/<\/u><\/b><b><u>/)) {
-        bonus.answers[i] = bonus.answers[i].replace(/<\/u><\/b><b><u>/g, '</u></b> <b><u>');
-        bonus.answers_sanitized[i] = sanitizeString(bonus.answers[i]);
+      const { answer, answerSanitized } = fixSingleAcceptEither(bonus.answers[i]);
+
+      if (performUpdates) {
         await bonuses.updateOne(
           { _id: bonus._id },
-          {
-            $set: {
-              [`answers.${i}`]: bonus.answers[i],
-              [`answers_sanitized${i}`]: sanitizeString(bonus.answers[i])
-            }
-          }
+          { $set: { [`answers.${i}`]: answer, [`answers_sanitized.${i}`]: answerSanitized } }
         );
       } else {
-        const { mainAnswer } = splitMainAnswer(bonus.answers[i] ?? '');
-
-        if (mainAnswer.match(/(?<=<u>)[^<]*(?=<\/u>)/g)?.length !== 1) {
-          continue;
-        }
-
-        bonus.answers[i] = bonus.answers[i].replace(/(?<=[a-z])(?=[A-Z])/g, '</u></b> <b><u>');
-        bonus.answers_sanitized[i] = bonus.answers_sanitized[i].replace(/(?<=[a-z])(?=[A-Z])/g, ' ');
-
-        await bonuses.updateOne(
-          { _id: bonus._id },
-          {
-            $set: {
-              [`answers.${i}`]: bonus.answers[i],
-              [`answers_sanitized.${i}`]: sanitizeString(bonus.answers[i])
-            }
-          }
-        );
+        console.log(`${bonus._id}: ${bonus.answers[i]}`);
+        console.log(`                      ->: ${answer}`);
+        console.log(`                        : ${bonus.answers_sanitized[i]}`);
+        console.log(`                      ->: ${answerSanitized}`);
+        return;
       }
     }
   }
 }
 
-export default async function fixAcceptEither (printFrequency = 10) {
-  await fixAcceptEitherTossups(printFrequency);
-  await fixAcceptEitherBonuses(printFrequency);
+/**
+ * Runs batch fixes to answerlines with "accept either" logic that do not have a space between the two acceptable answers.
+ * Example: <b><u>Lebron</u><u>James</u></b> should be <b><u>Lebron</u></b> <b><u>James</u></b>.
+ *
+ * @param {object} [options] - Options for the batch fix.
+ * @param {boolean} [options.performUpdates=false] - Whether to perform updates or just print what would be updated.
+ * @param {number} [options.printFrequency=10] - Frequency of progress printing.
+ * @returns {Promise<void>} Resolves when all fixes are complete.
+ */
+export default async function fixAcceptEither ({ performUpdates = false, printFrequency = 10 } = {}) {
+  await fixAcceptEitherTossups({ performUpdates, printFrequency });
+  await fixAcceptEitherBonuses({ performUpdates, printFrequency });
 }
