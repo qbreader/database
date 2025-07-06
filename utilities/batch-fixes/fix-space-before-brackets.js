@@ -2,8 +2,8 @@ import { bonuses, tossups } from '../collections.js';
 import removeHTML from '../../core/remove-html.js';
 import sanitizeString from '../../core/sanitize-string.js';
 
-const findRegex = /[A-Za-z0-9>][[(]/g;
-const replaceRegex = /(?<=[A-Za-z0-9>])(?=[[(])/g;
+const findRegex = /[A-Za-z0-9>\])][[(]/g;
+const replaceRegex = /(?<=[A-Za-z0-9>\])])(?=[[(])/g;
 
 export default async function fixSpaceBeforeBrackets ({ performUpdates = false } = {}) {
   console.log('tossup', await tossups.countDocuments({ answer: findRegex, answer_sanitized: findRegex }));

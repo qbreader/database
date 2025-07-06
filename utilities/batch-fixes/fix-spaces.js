@@ -16,8 +16,6 @@ function typeToCollection (type) {
   throw new Error(`Unknown type: ${type}`);
 }
 
-const spaceRegex = /\t|^ | $| {2,}/g;
-
 /**
  * Fixes extra spaces in specified fields of 'tossup' and 'bonus' documents in the database.
  *
@@ -26,6 +24,9 @@ const spaceRegex = /\t|^ | $| {2,}/g;
  * @returns {Promise<void>} Resolves when the operation is complete.
  */
 export default async function fixSpaces ({ performUpdates = false } = {}) {
+  // \xa0 = non-breaking space
+  const spaceRegex = /\t|^ | $| {2,}|\xa0/g;
+
   const fields = {
     tossup: ['question', 'answer'],
     bonus: ['leadin']
@@ -74,7 +75,7 @@ export default async function fixSpaces ({ performUpdates = false } = {}) {
 
         await typeToCollection(type).updateOne(
           { _id: question._id },
-          { $set: { [field]: question[field], [`${field}_sanitized`]: question[field].map(part => sanitizeString(part)) } }
+          { $set: { [field]: question[field], [`${field}_sanitized`]: question[field].map(part => sanitizeString(removeHTML(part))) } }
         );
 
         counter++;
