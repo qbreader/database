@@ -29,7 +29,7 @@ const perBonusData = accountInfo.collection('per-bonus-data');
  * @param {string} params.folderPath - the folder that the packet is in. Defaults to the current directory.
  * @param {boolean} params.shiftPacketNumbers - whether to shift the packet numbers of existing packets. Defaults to `false`.
  */
-async function upsertPacket ({ setName, packetName, packetNumber, zeroIndexQuestions, folderPath = './', shiftPacketNumbers = false }) {
+async function upsertPacket ({ setName, packetName, packetNumber, preserveCategory, zeroIndexQuestions, folderPath = './', shiftPacketNumbers = false }) {
   const tossupBulk = tossups.initializeUnorderedBulkOp();
   const bonusBulk = bonuses.initializeUnorderedBulkOp();
   const perTossupDataBulk = perTossupData.initializeUnorderedBulkOp();
@@ -94,22 +94,25 @@ async function upsertPacket ({ setName, packetName, packetNumber, zeroIndexQuest
     }
 
     if (index < tossupCount && packetAlreadyExists) {
-      updateDoc.$set['packet.name'] = packetName;
-      const { _id } = await tossups.findOneAndUpdate({ 'packet._id': packetId, number }, updateDoc);
-      if (tossup.alternate_subcategory) {
-        await perTossupData.updateOne(
-          { _id },
-          { $set: { difficulty: set.difficulty, category: tossup.category, subcategory: tossup.subcategory, alternate_subcategory: tossup.alternate_subcategory } }
-        );
-      } else {
-        await perTossupData.updateOne(
-          { _id },
-          {
-            $set: { difficulty: set.difficulty, category: tossup.category, subcategory: tossup.subcategory },
-            $unset: { alternate_subcategory: '' }
-          }
-        );
+      if (preserveCategory) {
+        delete updateDoc.$set.category;
+        delete updateDoc.$set.subcategory;
+        delete updateDoc.$set.alternate_subcategory;
+        delete updateDoc.$unset.alternate_subcategory;
       }
+      updateDoc.$set['packet.name'] = packetName;
+      const statsUpdateDoc = { $set: { difficulty: set.difficulty } };
+      if (!preserveCategory) {
+        statsUpdateDoc.$set.category = tossup.category;
+        statsUpdateDoc.$set.subcategory = tossup.subcategory;
+        if (tossup.alternate_subcategory) {
+          statsUpdateDoc.$set.alternate_subcategory = tossup.alternate_subcategory;
+        } else {
+          statsUpdateDoc.$unset = { alternate_subcategory: tossup.alternate_subcategory };
+        }
+      }
+      const { _id } = await tossups.findOneAndUpdate({ 'packet._id': packetId, number }, updateDoc);
+      await perTossupData.updateOne({ _id }, statsUpdateDoc);
     } else {
       const tossupId = new ObjectId();
       tossupBulk.insert({
@@ -195,22 +198,25 @@ async function upsertPacket ({ setName, packetName, packetNumber, zeroIndexQuest
     }
 
     if (index < bonusCount && packetAlreadyExists) {
-      updateDoc.$set['packet.name'] = packetName;
-      const { _id } = await bonuses.findOneAndUpdate({ 'packet._id': packetId, number }, updateDoc);
-      if (bonus.alternate_subcategory) {
-        await perBonusData.updateOne(
-          { _id },
-          { $set: { difficulty: set.difficulty, category: bonus.category, subcategory: bonus.subcategory, alternate_subcategory: bonus.alternate_subcategory } }
-        );
-      } else {
-        await perBonusData.updateOne(
-          { _id },
-          {
-            $set: { difficulty: set.difficulty, category: bonus.category, subcategory: bonus.subcategory },
-            $unset: { alternate_subcategory: '' }
-          }
-        );
+      if (preserveCategory) {
+        delete updateDoc.$set.category;
+        delete updateDoc.$set.subcategory;
+        delete updateDoc.$set.alternate_subcategory;
+        delete updateDoc.$unset.alternate_subcategory;
       }
+      updateDoc.$set['packet.name'] = packetName;
+      const statsUpdateDoc = { $set: { difficulty: set.difficulty } };
+      if (!preserveCategory) {
+        statsUpdateDoc.$set.category = bonus.category;
+        statsUpdateDoc.$set.subcategory = bonus.subcategory;
+        if (bonus.alternate_subcategory) {
+          statsUpdateDoc.$set.alternate_subcategory = bonus.alternate_subcategory;
+        } else {
+          statsUpdateDoc.$unset = { alternate_subcategory: bonus.alternate_subcategory };
+        }
+      }
+      const { _id } = await bonuses.findOneAndUpdate({ 'packet._id': packetId, number }, updateDoc);
+      await perBonusData.updateOne({ _id }, statsUpdateDoc);
     } else {
       const bonusId = new ObjectId();
       bonusBulk.insert({
@@ -260,21 +266,27 @@ async function upsertPacket ({ setName, packetName, packetNumber, zeroIndexQuest
     await perBonusDataBulk.execute();
   }
 
-  console.log('done');
+  console.log(`Uploaded ${setName} Packet ${packetName}`);
 }
 
 /**
  *
  * @param {string} setName
  * @param {number} difficulty - the difficulty of the set, as a number from 0 to 10. This parameter is ignored if the set already exists.
- * @param {boolean} [standard=true] - whether the set is a standard set. Defaults to true. This parameter is ignored if the set already exists.
- * @param {boolean} [zeroIndexQuestions=false] - whether question numbering starts at 0 or 1. Defaults to 1 (i.e. zeroIndexQuestions = false).
- * @param {string} [folderPath='./'] - the folder that the set is in. Defaults to the current directory.
+ * @param {object} params
+ * @param {boolean} [params.preserveCategory=false] - whether to preserve the category of existing questions of tossups and bonuses. Defaults to `false`.
+ * @param {boolean} [params.standard] - whether the set is a standard set. Defaults to true. This parameter is ignored if the set already exists.
+ * @param {boolean} [params.zeroIndexQuestions=false] - whether question numbering starts at 0 or 1. Defaults to 1 (i.e. zeroIndexQuestions = false).
+ * @param {string} [params.folderPath='./'] - the folder that the set is in. Defaults to the current directory.
  * @returns {Promise<boolean>} whether the set existed before updating
  */
-async function upsertSet (setName, difficulty, standard = true, zeroIndexQuestions = false, folderPath = './') {
+async function upsertSet (setName, difficulty, { preserveCategory = false, standard = true, zeroIndexQuestions = false, folderPath = './' }) {
   let setAlreadyExists = await sets.countDocuments({ name: setName });
   setAlreadyExists = !!setAlreadyExists;
+
+  if (!setAlreadyExists && (!difficulty || typeof difficulty !== 'number')) {
+    throw new Error(`Set ${setName} does not exist and difficulty ${difficulty} is invalid`);
+  }
 
   if (!setAlreadyExists) {
     console.log(`Set ${setName} does not exist`);
@@ -292,8 +304,7 @@ async function upsertSet (setName, difficulty, standard = true, zeroIndexQuestio
     const packetName = fileName.slice(0, -5);
     packetNumber++;
 
-    await upsertPacket({ setName, packetName, packetNumber, zeroIndexQuestions, folderPath: `${folderPath}/${setName}` });
-    console.log(`Uploaded ${setName} Packet ${packetName}`);
+    await upsertPacket({ setName, packetName, packetNumber, preserveCategory, zeroIndexQuestions, folderPath: `${folderPath}/${setName}` });
   }
 
   return setAlreadyExists;
@@ -303,3 +314,5 @@ export { upsertPacket, upsertSet };
 
 // await upsertPacket({ setName: '', packetName: '', packetNumber: 1, shiftPacketNumbers: true });
 // console.log(await upsertSet(''));
+
+await client.close();
