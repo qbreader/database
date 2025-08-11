@@ -1,7 +1,5 @@
 {
-    "eslint.format.enable": true,
-    "editor.codeActionsOnSave": {
-        "source.fixAll.eslint": "explicit"
-    },
-    "eslint.validate": ["javascript"]
+    "standard.engine": "semistandard",
+    "standard.autoFixOnSave": true,
+    "standard.enable": true,
 }
