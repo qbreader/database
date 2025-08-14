@@ -7,7 +7,7 @@ The questions are stored in MongoDB.
 
 ## Obtaining Questions
 
-If you want to obtain a copy of all the questions on the database, you may be interested in downloading the [latest backup](https://www.qbreader.org/backups).
+If you want to obtain a copy of all the questions on the database, you may be interested in downloading the [latest backup](https://www.qbreader.org/db/backups).
 I ask that any software you develop using this question also uses a copyleft license.
 
 **Note:** Since I have obtained all of these questions from https://quizbowlpackets.com/, you should follow their disclaimer:
