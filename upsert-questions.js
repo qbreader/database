@@ -42,6 +42,7 @@ async function upsertPacket ({ setName, packetName, packetNumber, preserveCatego
   const packet = await packets.findOne({ 'set._id': set._id, number: packetNumber });
 
   if (shiftPacketNumbers) {
+    await packets.dropIndex('set.name_1_number_1');
     console.log(await tossups.updateMany({ 'set._id': set._id, 'packet.number': { $gte: packetNumber } }, { $inc: { 'packet.number': 1 } }));
     console.log(await bonuses.updateMany({ 'set._id': set._id, 'packet.number': { $gte: packetNumber } }, { $inc: { 'packet.number': 1 } }));
     console.log(await packets.updateMany({ 'set._id': set._id, number: { $gte: packetNumber } }, { $inc: { number: 1 } }));
@@ -263,6 +264,10 @@ async function upsertPacket ({ setName, packetName, packetNumber, preserveCatego
 
   if (perBonusDataBulk.length > 0) {
     await perBonusDataBulk.execute();
+  }
+
+  if (shiftPacketNumbers) {
+    await packets.createIndex({ 'set.name': 1, number: 1 }, { unique: true });
   }
 
   console.log(`Uploaded ${setName} Packet ${packetName}`);
