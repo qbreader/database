@@ -119,7 +119,6 @@ async function upsertPacket ({ setName, packetName, packetNumber, preserveCatego
         ...updateDoc.$set,
         _id: tossupId,
         number,
-        createdAt: new Date(),
         difficulty: set.difficulty,
         packet: {
           _id: packetId,
