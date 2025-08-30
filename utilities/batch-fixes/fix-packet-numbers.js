@@ -1,6 +1,6 @@
 import { packets } from '../collections.js';
 import updatePacketNumber from '../set-management/update-packet-number.js';
-import { closeConnection } from '../../core/mongodb-client.js';
+import { client } from '../../core/mongodb-client.js';
 
 export default async function fixPacketNumbers (setName) {
   await packets.dropIndex('set.name_1_number_1');
@@ -19,4 +19,4 @@ export default async function fixPacketNumbers (setName) {
   await packets.createIndex({ 'set.name': 1, number: 1 }, { unique: true });
 }
 
-await closeConnection();
+await client.close();

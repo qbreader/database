@@ -1,5 +1,5 @@
 import { HEADER, ENDC } from './core/bcolors.js';
-import { closeConnection } from './core/mongodb-client.js';
+import { client } from './core/mongodb-client.js';
 import { tossupToString, bonusToString } from './stringify.js';
 import { bonuses, tossups } from './utilities/collections.js';
 
@@ -37,4 +37,4 @@ await listReports({ allowedReasons: ['wrong-category'] });
 // await listReports({ allowedReasons: ['answer-checking'] });
 // await listReports({ allowedReasons: ['other'] });
 
-await closeConnection();
+await client.close();

@@ -6,7 +6,3 @@ const uri = `mongodb+srv://${process.env.MONGODB_USERNAME || 'geoffreywu42'}:${p
 export const client = new MongoClient(uri);
 await client.connect();
 console.log('connected to mongodb');
-
-export async function closeConnection () {
-  await client.close();
-}
