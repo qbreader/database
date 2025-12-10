@@ -59,6 +59,7 @@ export const SUBCATEGORY_TO_SUBSUBCATEGORY = {
     'Jazz',
     'Opera',
     'Photography',
+    'Musicals',
     'Misc Arts'
   ],
   'Social Science': [
