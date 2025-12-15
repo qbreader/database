@@ -2,11 +2,11 @@ import { sets, tossups, bonuses, packets, perTossupData, perBonusData } from '..
 
 export default async function deleteSet (setName) {
   const result = await sets.findOneAndDelete({ name: setName });
-  if (!result.value) {
+  if (!result) {
     console.log('Set not found');
     return;
   }
-  const { _id } = result.value;
+  const { _id } = result;
 
   console.log(await tossups.deleteMany({ 'set._id': _id }));
   console.log(await bonuses.deleteMany({ 'set._id': _id }));
