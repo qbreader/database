@@ -288,7 +288,7 @@ async function upsertSet (setName, difficulty, { preserveCategory = false, stand
   let setAlreadyExists = await sets.countDocuments({ name: setName });
   setAlreadyExists = !!setAlreadyExists;
 
-  if (!setAlreadyExists && (!difficulty || typeof difficulty !== 'number')) {
+  if (!setAlreadyExists && (difficulty === undefined || difficulty === null || typeof difficulty !== 'number')) {
     throw new Error(`Set ${setName} does not exist and difficulty ${difficulty} is invalid`);
   }
 
