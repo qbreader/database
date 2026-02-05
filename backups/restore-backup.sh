@@ -4,26 +4,42 @@
 # .env should be a file with the MONGODB_USERNAME and MONGODB_PASSWORD in the same directory as this file
 # defined as bash variables (a standard .env file should do the trick)
 
+if [ -f .env ]; then
 source .env
+fi
 # CLUSTER_URL="qbreader.0i7oej9"
 CLUSTER_URL="qbreader2.z35tynb"
-URI="mongodb+srv://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@${CLUSTER_URL}.mongodb.net/?retryWrites=true&w=majority"
+# Prefer MONGODB_URI if provided (e.g., local docker), otherwise use Atlas URI
+URI="${MONGODB_URI:-"mongodb+srv://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@${CLUSTER_URL}.mongodb.net/?retryWrites=true&w=majority"}"
 
-mongorestore -d qbreader --uri=$URI -c tossups dump/qbreader/tossups.bson
-mongorestore -d qbreader --uri=$URI -c bonuses dump/qbreader/bonuses.bson
-mongorestore -d qbreader --uri=$URI -c packets dump/qbreader/packets.bson
-mongorestore -d qbreader --uri=$URI -c sets dump/qbreader/sets.bson
+restore_if_present () {
+  local db="$1"
+  local coll="$2"
+  local file="$3"
+  if [ -f "$file" ]; then
+    echo "Restoring $db.$coll from $file"
+    mongorestore -d "$db" --uri="$URI" -c "$coll" "$file"
+  else
+    echo "Skipping $db.$coll (not found at $file)"
+  fi
+}
 
-mongorestore -d geoword --uri=$URI -c audio dump/geoword/audio.bson
-mongorestore -d geoword --uri=$URI -c buzzes dump/geoword/buzzes.bson
-mongorestore -d geoword --uri=$URI -c division-choices dump/geoword/division-choices.bson
-mongorestore -d geoword --uri=$URI -c packets dump/geoword/packets.bson
-mongorestore -d geoword --uri=$URI -c payments dump/geoword/payments.bson
-mongorestore -d geoword --uri=$URI -c sample-audio dump/geoword/sample-audio.bson
-mongorestore -d geoword --uri=$URI -c tossups dump/geoword/tossups.bson
+restore_if_present qbreader tossups dump/qbreader/tossups.bson
+restore_if_present qbreader bonuses dump/qbreader/bonuses.bson
+restore_if_present qbreader packets dump/qbreader/packets.bson
+restore_if_present qbreader sets dump/qbreader/sets.bson
 
-mongorestore -d account-info --uri=$URI -c bonus-stars dump/account-info/bonus-stars.bson
-mongorestore -d account-info --uri=$URI -c per-bonus-data dump/account-info/per-bonus-data.bson
-mongorestore -d account-info --uri=$URI -c per-tossup-data dump/account-info/per-tossup-data.bson
-mongorestore -d account-info --uri=$URI -c tossup-stars dump/account-info/tossup-stars.bson
-mongorestore -d account-info --uri=$URI -c users dump/account-info/users.bson
+restore_if_present geoword audio            dump/geoword/audio.bson
+restore_if_present geoword buzzes           dump/geoword/buzzes.bson
+restore_if_present geoword division-choices dump/geoword/division-choices.bson
+restore_if_present geoword packets          dump/geoword/packets.bson
+restore_if_present geoword payments         dump/geoword/payments.bson
+restore_if_present geoword sample-audio     dump/geoword/sample-audio.bson
+restore_if_present geoword tossups          dump/geoword/tossups.bson
+
+restore_if_present account-info bonus-stars     dump/account-info/bonus-stars.bson
+restore_if_present account-info per-bonus-data  dump/account-info/per-bonus-data.bson
+restore_if_present account-info per-tossup-data dump/account-info/per-tossup-data.bson
+restore_if_present account-info tossup-stars    dump/account-info/tossup-stars.bson
+restore_if_present account-info users           dump/account-info/users.bson
+
